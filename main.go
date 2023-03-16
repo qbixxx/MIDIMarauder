@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"log"
 	"time"
@@ -85,8 +84,6 @@ func Example_simple() {
 	fmt.Println("product: ",	midi_b)
 	fmt.Println("Manufacturer: ", manuf)
 
-	config, _ := dev.Config(num)
-	fmt.Println("Config ",	config)
 
 		
 	defer config.Close()
