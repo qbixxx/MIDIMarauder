@@ -153,9 +153,6 @@ func (mouse *MIDIDEV) read(interval time.Duration, maxSize int) {
 			fmt.Println("Note: ", data[2]," Value: ", data[3])
 		}
 
-		if data[0] == 1 && data[2] == 6{
-			fmt.Println("Control C !!!")
-			os.Exit(0)
 		}
 	  }
 
