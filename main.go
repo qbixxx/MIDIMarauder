@@ -1,13 +1,11 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"log"
 	"time"
 	"github.com/google/gousb"
-	"github.com/google/gousb/usbid"
-	
+	"github.com/google/gousb/usbid"	
 )
 
 func main(){
