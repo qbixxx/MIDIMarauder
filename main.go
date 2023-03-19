@@ -18,8 +18,6 @@ func main(){
 
 func Example_simple() {
 	// Initialize a new Context.
-
-
 	ctx := gousb.NewContext()
 	defer ctx.Close()
 
@@ -27,7 +25,6 @@ func Example_simple() {
 
 
 
-//	fmt.Println("DevDesc: ". devDesc)
 	// Open any device with a given VID/PID using a convenience function.
 	dev, err := ctx.OpenDeviceWithVIDPID(0x2467, 0x2034)
 	if err != nil {
@@ -37,12 +34,7 @@ func Example_simple() {
 
 	dev.SetAutoDetach(true)
 
-	//class := dev.Classify()
 	
-
-	// Claim the default interface using a convenience function.
-	// The default interface is always #0 alt #0 in the currently active
-	// config.
 	config := dev.String() 
 
 	a, _ := dev.GetStringDescriptor(3)
@@ -58,7 +50,6 @@ func Example_simple() {
 	manu, _ := dev.Manufacturer()
 	
 	midi_b, _ := dev.Product()
-	//midi_b := dev.Class()
 	fmt.Println("Config ",	config)
 	fmt.Println("product: ",	midi_b)
 	fmt.Println("Manufacturer: ", manu)
@@ -89,8 +80,8 @@ func Example_simple() {
 		  fmt.Println("Interface: ", intf)
 		  // Iterate through endpoints available for this interface.
 		  for _, endpointDesc := range intf.Setting.Endpoints {
-			// We only want to read, so we're looking for IN endpoints.
-			if endpointDesc.Direction == gousb.EndpointDirectionIn {
+
+			  if endpointDesc.Direction == gousb.EndpointDirectionIn {
 			
 			  
 			  endpoint, _ := intf.InEndpoint(endpointDesc.Number)
@@ -101,7 +92,7 @@ func Example_simple() {
 
 			  fmt.Println("endpoint poll interval", endpointDesc.PollInterval, "endpoint max packet size", endpointDesc.MaxPacketSize)
 
-			  mouse := &MIDIDEV{
+			  mdev := &MIDIDEV{
 				context:   ctx,
 				device:    dev,
 				intf:      intf,
@@ -109,7 +100,7 @@ func Example_simple() {
 			  }
 
 			  fmt.Println("\n",mouse.context,"\n",mouse.device,"\n",mouse.intf,"\n",mouse.endpoint)
-			  mouse.read(endpointDesc.PollInterval, endpointDesc.MaxPacketSize)
+			  mdev .read(endpointDesc.PollInterval, endpointDesc.MaxPacketSize)
 
 
 		  }
@@ -122,7 +113,7 @@ func Example_simple() {
 }
 
 
-func (mouse *MIDIDEV) read(interval time.Duration, maxSize int) {
+func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 
 	
 	interval = 2
@@ -153,7 +144,7 @@ func (mouse *MIDIDEV) read(interval time.Duration, maxSize int) {
 			fmt.Println("Note: ", data[2]," Value: ", data[3])
 		}
 
-		}
+		
 	  }
 
 	}
