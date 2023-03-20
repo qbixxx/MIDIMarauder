@@ -10,11 +10,11 @@ import (
 
 func main(){
 	
-	Example_simple()
+	readDevice()
 	
 }
 
-func Example_simple() {
+func readDevice() {
 	// Initialize a new Context.
 	ctx := gousb.NewContext()
 	defer ctx.Close()
