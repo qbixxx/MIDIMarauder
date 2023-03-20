@@ -97,8 +97,8 @@ func readDevice() {
 				endpoint:  endpoint,
 			  }
 
-			  fmt.Println("\n",mouse.context,"\n",mouse.device,"\n",mouse.intf,"\n",mouse.endpoint)
-			  mdev .read(endpointDesc.PollInterval, endpointDesc.MaxPacketSize)
+			  fmt.Println("\n",mdev.context,"\n",mdev.device,"\n",mdev.intf,"\n",mdev.endpoint)
+			  mdev.read(endpointDesc.PollInterval, endpointDesc.MaxPacketSize)
 
 
 		  }
@@ -128,7 +128,7 @@ func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 	  select {
 	  case <-ticker.C:
 		buff := make([]byte, maxSize)
-		n, _ := mouse.endpoint.Read(buff)
+		n, _ := mdev.endpoint.Read(buff)
 
 		data := buff[:n]
 	  
