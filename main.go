@@ -56,14 +56,8 @@ func readDevice() {
 	for num := range dev.Desc.Configs {
 		config, _ := dev.Config(num)
 	
-		
-
-		// In a scenario where we have an error, we can continue
-		// to the next config. Same is true for interfaces and
-		// endpoints.
 		defer config.Close()
 	
-		// Iterate through available interfaces for this configuration
 		for _, desc := range config.Desc.Interfaces {
 		  intf, _ := config.Interface(desc.Number, 0)	
 
@@ -76,8 +70,8 @@ func readDevice() {
 
 
 		  fmt.Println("Interface: ", intf)
-		  // Iterate through endpoints available for this interface.
-		  for _, endpointDesc := range intf.Setting.Endpoints {
+
+			for _, endpointDesc := range intf.Setting.Endpoints {
 
 			  if endpointDesc.Direction == gousb.EndpointDirectionIn {
 			
@@ -116,7 +110,6 @@ func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 	
 	interval = 2
 
-	maxSize = 64
 	fmt.Println("time duration: ", interval, "max size: ", maxSize)
 	
 	ticker := time.NewTicker(interval)
@@ -157,5 +150,4 @@ type MIDIDEV struct {
 	intf     *gousb.Interface
 	endpoint *gousb.InEndpoint
   
-	// Additional fields we'll get to later
   }
