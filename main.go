@@ -8,6 +8,17 @@ import (
 	"github.com/google/gousb/usbid"	
 )
 
+
+type MIDIDEV struct {
+
+	// Fields for interacting with the USB connection
+	context  *gousb.Context
+	device   *gousb.Device
+	intf     *gousb.Interface
+	endpoint *gousb.InEndpoint
+  
+  }
+
 func main(){
 	
 	readDevice()
@@ -152,11 +163,3 @@ func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
   }
 
 
-type MIDIDEV struct {
-	// Fields for interacting with the USB connection
-	context  *gousb.Context
-	device   *gousb.Device
-	intf     *gousb.Interface
-	endpoint *gousb.InEndpoint
-  
-  }
