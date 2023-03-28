@@ -5,3 +5,4 @@ Right now the code is extremely bad, it needs to be re-written. But for now it's
 
 Also, the VID/PID are hardcoded. if you want to  test a midi device first connect it to your linux machine, run lsusb and change the vid/pid arguments in the ctx.OpenDeviceWithVIDPID(vid,pid)
 
+![demo](https://user-images.githubusercontent.com/89623002/228107528-5fe7f15f-cae8-421c-820e-8982d3935ef9.gif)
