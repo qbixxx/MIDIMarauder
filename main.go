@@ -32,18 +32,24 @@ func readDevice() {
 
 	dev.SetAutoDetach(true)
 
-	
+
 	config := dev.String() 
 
-	a, _ := dev.GetStringDescriptor(3)
+	dev.Reset()
 
-	fmt.Println("a: ", a)
-	b, _ := dev.GetStringDescriptor(2)
 
-	fmt.Println("b: ", b)
-	c, _ := dev.GetStringDescriptor(1)
+	strDesc3, _ := dev.GetStringDescriptor(3)
+	fmt.Println("strDesc3: ", strDesc3)
 
-	fmt.Println("c: ", c)
+	strDesc2, _ := dev.GetStringDescriptor(2)
+	fmt.Println("strDesc2: ", strDesc2)
+
+	strDesc1, _ := dev.GetStringDescriptor(1)
+	fmt.Println("strDesc1: ", strDesc1)
+
+
+	strDesc0, _ := dev.GetStringDescriptor(0)
+	fmt.Println("strDesc0: ", strDesc0)
 
 	manu, _ := dev.Manufacturer()
 	
@@ -56,6 +62,8 @@ func readDevice() {
 	for num := range dev.Desc.Configs {
 		config, _ := dev.Config(num)
 	
+		
+
 		defer config.Close()
 	
 		for _, desc := range config.Desc.Interfaces {
@@ -71,7 +79,7 @@ func readDevice() {
 
 		  fmt.Println("Interface: ", intf)
 
-			for _, endpointDesc := range intf.Setting.Endpoints {
+		  for _, endpointDesc := range intf.Setting.Endpoints {
 
 			  if endpointDesc.Direction == gousb.EndpointDirectionIn {
 			
@@ -108,8 +116,7 @@ func readDevice() {
 func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 
 	
-	interval = 2
-
+	interval = 125000 //hardcoded, idkw it appears to be 0ms according to the endpoint poll description
 	fmt.Println("time duration: ", interval, "max size: ", maxSize)
 	
 	ticker := time.NewTicker(interval)
@@ -131,10 +138,12 @@ func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 		if data[0] == 11{
 			fmt.Println("CC:", data[2]," Value: ", data[3])
 		}
-		if data[0] == 8 || data[0] == 9{
-			fmt.Println("Note: ", data[2]," Value: ", data[3])
+		if data[0] == 8{
+			fmt.Println("Note OFF: ", data[2]," Velocity: ", data[3])
 		}
-
+		if data[0] == 9{
+			fmt.Println("Note ON: ", data[2]," Velocity: ", data[3])
+		}
 		
 	  }
 
