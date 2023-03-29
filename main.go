@@ -46,9 +46,6 @@ func readDevice() {
 
 	config := dev.String() 
 
-	dev.Reset()
-
-
 	strDesc3, _ := dev.GetStringDescriptor(3)
 	fmt.Println("strDesc3: ", strDesc3)
 
