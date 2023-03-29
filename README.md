@@ -10,5 +10,7 @@ Also, the VID/PID are hardcoded. if you want to  test a midi device first connec
 * Create circular linked list for calculating the note of each MIDI note event.
 * Literally everything else
 
+
+# Demo gif:
 ![demo](https://user-images.githubusercontent.com/89623002/228107528-5fe7f15f-cae8-421c-820e-8982d3935ef9.gif)
 
