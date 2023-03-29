@@ -8,8 +8,8 @@ Also, the VID/PID are hardcoded. if you want to  test a midi device first connec
 # To Do:
 
 * Create circular linked list for calculating the note of each MIDI note event.
-* Create TUI interface with bubbletea
-* Literally everything else
+* Create TUI interface with bubbletea.
+* Literally everything else.
 
 
 # Demo gif
