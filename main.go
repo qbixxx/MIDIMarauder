@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/google/gousb"
+	"github.com/google/gousb/usbid"
 	"log"
 	"time"
-	"github.com/google/gousb"
-	"github.com/google/gousb/usbid"	
+//	tea "github.com/charmbracelet/bubbletea"
 )
 
 
@@ -16,23 +17,26 @@ type MIDIDEV struct {
 	device   *gousb.Device
 	intf     *gousb.Interface
 	endpoint *gousb.InEndpoint
-  
-  }
+}
 
-func main(){
-	
+
+func getNotesList() []string {
+	return []string{"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "}
+}
+
+func main() {
+
 	readDevice()
-	
+
 }
 
 func readDevice() {
+
 	// Initialize a new Context.
 	ctx := gousb.NewContext()
 	defer ctx.Close()
 
 	fmt.Println("Context: \n", ctx)
-
-
 
 	// Open any device with a given VID/PID using a convenience function.
 	dev, err := ctx.OpenDeviceWithVIDPID(0x2467, 0x2034)
@@ -43,8 +47,7 @@ func readDevice() {
 
 	dev.SetAutoDetach(true)
 
-
-	config := dev.String() 
+	config := dev.String()
 
 	strDesc3, _ := dev.GetStringDescriptor(3)
 	fmt.Println("strDesc3: ", strDesc3)
@@ -55,108 +58,106 @@ func readDevice() {
 	strDesc1, _ := dev.GetStringDescriptor(1)
 	fmt.Println("strDesc1: ", strDesc1)
 
-
 	strDesc0, _ := dev.GetStringDescriptor(0)
 	fmt.Println("strDesc0: ", strDesc0)
 
 	manu, _ := dev.Manufacturer()
-	
+
 	midi_b, _ := dev.Product()
-	fmt.Println("Config ",	config)
-	fmt.Println("product: ",	midi_b)
+	fmt.Println("Config ", config)
+	fmt.Println("product: ", midi_b)
 	fmt.Println("Manufacturer: ", manu)
 
-// Iterate through configurations
+	// Iterate through configurations
 	for num := range dev.Desc.Configs {
 		config, _ := dev.Config(num)
-	
-		
 
 		defer config.Close()
-	
+
 		for _, desc := range config.Desc.Interfaces {
-		  intf, _ := config.Interface(desc.Number, 0)	
+			intf, _ := config.Interface(desc.Number, 0)
 
+			classy := usbid.Classify(dev.Desc)
 
+			fmt.Println("Classify: \n", classy)
 
-		  classy := usbid.Classify(dev.Desc)
+			fmt.Println("Interface: ", intf)
 
+			for _, endpointDesc := range intf.Setting.Endpoints {
 
-		  fmt.Println("Classify: \n", classy)
+				if endpointDesc.Direction == gousb.EndpointDirectionIn {
 
+					endpoint, _ := intf.InEndpoint(endpointDesc.Number)
 
-		  fmt.Println("Interface: ", intf)
+					fmt.Println(endpoint)
 
-		  for _, endpointDesc := range intf.Setting.Endpoints {
+					fmt.Println("endpoint poll interval", endpointDesc.PollInterval, "endpoint max packet size", endpointDesc.MaxPacketSize)
 
-			  if endpointDesc.Direction == gousb.EndpointDirectionIn {
-			
-			  
-			  endpoint, _ := intf.InEndpoint(endpointDesc.Number)
-			
-			
-			  fmt.Println(endpoint)
+					mdev := &MIDIDEV{
+						context:  ctx,
+						device:   dev,
+						intf:     intf,
+						endpoint: endpoint,
+					}
 
+					fmt.Println("\n", mdev.context, "\n", mdev.device, "\n", mdev.intf, "\n", mdev.endpoint)
+					mdev.read(endpointDesc.PollInterval, endpointDesc.MaxPacketSize)
 
-			  fmt.Println("endpoint poll interval", endpointDesc.PollInterval, "endpoint max packet size", endpointDesc.MaxPacketSize)
-
-			  mdev := &MIDIDEV{
-				context:   ctx,
-				device:    dev,
-				intf:      intf,
-				endpoint:  endpoint,
-			  }
-
-			  fmt.Println("\n",mdev.context,"\n",mdev.device,"\n",mdev.intf,"\n",mdev.endpoint)
-			  mdev.read(endpointDesc.PollInterval, endpointDesc.MaxPacketSize)
-
-
-		  }
+				}
+			}
 		}
-	  }
-
 
 	}
 
 }
 
-
 func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 
-	
 	interval = 125000 //hardcoded, idkw it appears to be 0ms according to the endpoint poll description
 	fmt.Println("time duration: ", interval, "max size: ", maxSize)
-	
+
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
-	
+
+	list := getNotesList()
 
 	for {
-		
-	  select {
-	  case <-ticker.C:
-		buff := make([]byte, maxSize)
-		n, _ := mdev.endpoint.Read(buff)
 
-		data := buff[:n]
-	  
-		if data[0] == 14{
-			fmt.Println("CC:", data[2]," Value: ", data[3])
+		select {
+		case <-ticker.C:
+			buff := make([]byte, maxSize)
+			n, err := mdev.endpoint.Read(buff)
+			if err != nil{
+				fmt.Println("Error", err)
+			}
+
+			data := buff[:n]
+	//		fmt.Println(data)
+
+			if data[0] == 14 {
+				fmt.Println("CC:", data[2], " Value: ", data[3])
+			}
+			if data[0] == 11 {
+				fmt.Println("CC:", data[2], " Value: ", data[3])
+			}
+			if data[0] == 8 {
+
+				for data[2] > 11 {
+					data[2] = data[2] - 12
+				}
+
+				fmt.Println("Note OFF: ", list[data[2]], " Velocity: ", data[3])
+			}
+			if data[0] == 9 {
+
+				for data[2] > 11 {
+					data[2] = data[2] - 12
+				}
+				fmt.Println("Note ON:  ", list[data[2]], " Velocity: ", data[3])
+			}
+
 		}
-		if data[0] == 11{
-			fmt.Println("CC:", data[2]," Value: ", data[3])
-		}
-		if data[0] == 8{
-			fmt.Println("Note OFF: ", data[2]," Velocity: ", data[3])
-		}
-		if data[0] == 9{
-			fmt.Println("Note ON: ", data[2]," Velocity: ", data[3])
-		}
-		
-	  }
 
 	}
-	
-  }
 
-
+}
