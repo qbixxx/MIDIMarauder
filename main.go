@@ -9,6 +9,10 @@ import (
 //	tea "github.com/charmbracelet/bubbletea"
 )
 
+const asciiTitle = 
+" _ _   .   _/  .  /|,/  _   _  _        _/  _   _\n"+
+"/ / / /  /_/  /  /  /  /_| /  /_| /_/ /_/  /_' / \n"+
+"                                                 "
 
 type MIDIDEV struct {
 
@@ -25,6 +29,9 @@ func getNotesList() []string {
 }
 
 func main() {
+
+	fmt.Println(asciiTitle)
+
 
 	readDevice()
 
@@ -120,6 +127,8 @@ func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 	defer ticker.Stop()
 
 	list := getNotesList()
+
+	fmt.Println("---------------------------------------- MIDI BEGIN ----------------------------------------")
 
 	for {
 
