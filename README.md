@@ -15,4 +15,4 @@ Also, the VID/PID are hardcoded. if you want to  test a midi device first connec
 
 
 
-![demo](https://user-images.githubusercontent.com/89623002/232638765-ea2cb617-5354-42c1-af3c-c577e70b8ab2.gif)
+![demomm](https://user-images.githubusercontent.com/89623002/232940462-6cc3261d-ce73-4edb-aaa4-c7e4df74f851.gif)
