@@ -6,13 +6,14 @@ import (
 	"github.com/google/gousb/usbid"
 	"log"
 	"time"
-//	tea "github.com/charmbracelet/bubbletea"
+	// tea "github.com/charmbracelet/bubbletea"
 )
 
-const asciiTitle = 
-" _ _   .   _/  .  /|,/  _   _  _        _/  _   _\n"+
-"/ / / /  /_/  /  /  /  /_| /  /_| /_/ /_/  /_' / \n"+
-"                                                 "
+const asciiTitle = " _ _   .   _/  .  /|,/  _   _  _        _/  _   _\n" +
+	"/ / / /  /_/  /  /  /  /_| /  /_| /_/ /_/  /_' / \n" +
+	"                                                 "
+
+const mBegin = "---------------------------------------- MIDI BEGIN ----------------------------------------"
 
 type MIDIDEV struct {
 
@@ -23,7 +24,6 @@ type MIDIDEV struct {
 	endpoint *gousb.InEndpoint
 }
 
-
 func getNotesList() []string {
 	return []string{"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "}
 }
@@ -31,7 +31,6 @@ func getNotesList() []string {
 func main() {
 
 	fmt.Println(asciiTitle)
-
 
 	readDevice()
 
@@ -86,7 +85,7 @@ func readDevice() {
 
 			classy := usbid.Classify(dev.Desc)
 
-			fmt.Println("Classify: \n", classy)
+			fmt.Println("Classify: ", classy)
 
 			fmt.Println("Interface: ", intf)
 
@@ -98,7 +97,7 @@ func readDevice() {
 
 					fmt.Println(endpoint)
 
-					fmt.Println("endpoint poll interval", endpointDesc.PollInterval, "endpoint max packet size", endpointDesc.MaxPacketSize)
+					fmt.Println("Endpoint poll interval: ", endpointDesc.PollInterval, "\nEndpoint max packet size", endpointDesc.MaxPacketSize, "Bytes")
 
 					mdev := &MIDIDEV{
 						context:  ctx,
@@ -128,7 +127,7 @@ func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 
 	list := getNotesList()
 
-	fmt.Println("---------------------------------------- MIDI BEGIN ----------------------------------------")
+	fmt.Println(mBegin)
 
 	for {
 
@@ -136,37 +135,37 @@ func (mdev *MIDIDEV) read(interval time.Duration, maxSize int) {
 		case <-ticker.C:
 			buff := make([]byte, maxSize)
 			n, err := mdev.endpoint.Read(buff)
-			if err != nil{
+			if err != nil {
 				fmt.Println("Error", err)
 			}
 
 			data := buff[:n]
-	//		fmt.Println(data)
 
-			if data[0] == 14 {
+			switch data[0] {
+			case 11, 14:
 				fmt.Println("CC:", data[2], " Value: ", data[3])
-			}
-			if data[0] == 11 {
-				fmt.Println("CC:", data[2], " Value: ", data[3])
-			}
-			if data[0] == 8 {
 
-				for data[2] > 11 {
-					data[2] = data[2] - 12
-				}
+			case 8:
 
-				fmt.Println("Note OFF: ", list[data[2]], " Velocity: ", data[3])
-			}
-			if data[0] == 9 {
+				note := getNotePosition(&data[2])
 
-				for data[2] > 11 {
-					data[2] = data[2] - 12
-				}
-				fmt.Println("Note ON:  ", list[data[2]], " Velocity: ", data[3])
+				fmt.Println("Note OFF: ", list[note], " Velocity: ", data[3])
+			case 9:
+				note := getNotePosition(&data[2])
+
+				fmt.Println("Note ON:  ", list[note], " Velocity: ", data[3])
 			}
 
 		}
 
 	}
 
+}
+
+func getNotePosition(n *byte) byte {
+
+	for *n > 11 {
+		*n = *n - 12
+	}
+	return *n
 }
