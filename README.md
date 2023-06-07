@@ -8,7 +8,7 @@ Also, the VID/PID are hardcoded. if you want to  test a midi device first connec
 # To Do:
 
 * Automatically recognize every MIDI device connected
-* Create TUI interface with bubbletea.
+* Create TUI with bubbletea.
 * Literally everything else.
 
 
