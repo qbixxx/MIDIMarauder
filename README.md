@@ -1,5 +1,5 @@
 # midiMarauder
-midiMarauder aims to be a TUI application for interacting with MIDI devices through USB. The idea is to have a MIDIOX like software for Linux machines.
+midiMarauder is a TUI application for interacting with MIDI devices through USB. The idea is to have a MIDIOX like software for Linux machines.
 
 For now it's just a proof of concept that MIDI messages can be received through USB and printed to the terminal via stdout.
 
