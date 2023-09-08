@@ -21,7 +21,7 @@ go build midimarauder.go
 
 # Make the executable accessible system-wide
 sudo cp "./midimarauder" "/usr/local/bin/"
-sudo chmod +x "/usr/local/bin/midimarauder"
+sudo chmod u+s "/usr/local/bin/midimarauder"
 
 # Check if the program is now available
 if command -v midimarauder &> /dev/null; then
