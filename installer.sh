@@ -14,7 +14,7 @@ go mod tidy
 
 # Install libusb (assuming it's available as a package)
 # For Debian/Ubuntu, adjust for your distribution
-sudo apt-get install libusb-1.0-0-dev
+sudo apt install libusb-1.0-0-dev
 
 # Build the Go code
 go build midimarauder.go
