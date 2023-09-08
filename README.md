@@ -8,10 +8,9 @@ For now it's just a proof of concept that MIDI messages can be received through 
 # To Do:
 
 * Automatically recognize every MIDI device connected ✅
-* Create TUI with bubbletea.
+* Create TUI with [bubbletea](https://github.com/charmbracelet/bubbletea).
 * Literally everything else.
-
-
+* 
 # Demo
 automatically detects both midi devices, scans every one that remains connected until theres nothing left and closes.
 
