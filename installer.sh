@@ -6,6 +6,22 @@ if ! command -v go &> /dev/null; then
     exit 1
 fi
 
+# Check if pkg-config is installed
+if ! command -v pkg-config &> /dev/null; then
+    echo "pkg-config is not installed. Installing..."
+    
+    # Install pkg-config
+    # For Debian/Ubuntu, adjust for your distribution
+    sudo apt update
+    sudo apt install pkg-config
+    
+    # Check if installation was successful
+    if ! command -v pkg-config &> /dev/null; then
+        echo "Failed to install pkg-config. Please install it manually."
+        exit 1
+    fi
+fi
+
 # Initialize a Go module
 go mod init midimarauder
 
