@@ -15,7 +15,7 @@ const asciiTitle = "  \\  | _)      | _)\n" +
 	" |\\/ |   _` |   __|  _` |  |   |   _` |   _ \\   __| \n" +
 	" |   |  (   |  |    (   |  |   |  (   |   __/  |    \n" +
 	"_|  _| \\__,_| _|   \\__,_| \\__,_| \\__,_| \\___| _| \n"
-const mBegin = "/---------------------------------------- MIDI STREAM ----------------------------------------/"
+const midiStream = "/---------------------------------------- MIDI STREAM ----------------------------------------/"
 
 const (
 	clrReset  = "\033[0m"
@@ -51,10 +51,9 @@ type MIDIDEV struct {
 func getNotesList() []string {
 	return []string{"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "}
 }
-func scanForMIDIDevices() [][]gousb.ID {
+func scanForMIDIDevices(ctx *gousb.Context) [][]gousb.ID {
 
-	ctx := gousb.NewContext()
-	defer ctx.Close()
+	//defer ctx.Close()
 
 	//store every device connected
 	devices, err := ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
@@ -107,30 +106,27 @@ func scanForMIDIDevices() [][]gousb.ID {
 
 func main() {
 
+	ctx := gousb.NewContext()
+
 	fmt.Println(Red + asciiTitle + clrReset)
 
-	midiDevices := scanForMIDIDevices()
+	midiDevices := scanForMIDIDevices(ctx)
 	if len(midiDevices) == 0 {
 		fmt.Println(Red + "Exiting" + clrReset)
 		os.Exit(0)
 	}
-	fmt.Println(mBegin)
+	fmt.Println(midiStream)
+
+	resultChan := make(chan string)
 	var wg sync.WaitGroup
-	resultChan := make(chan []byte)
 
 	// Launch a goroutine for each MIDI device
-	d := len(midiDevices)
-	for _, device := range midiDevices {
+
+	for _, dev := range midiDevices {
 		wg.Add(1)
-		go func(dev []gousb.ID) {
-			defer wg.Done()
-			readDevice(dev, resultChan)
-			d--
-			if d == 0 {
-				fmt.Println(Bold + Red + "Fatal: no devices left." + clrReset)
-				os.Exit(0)
-			}
-		}(device)
+
+		go readDevice(dev, ctx, resultChan, &wg)
+
 	}
 
 	// Wait for all goroutines to finish
@@ -139,18 +135,18 @@ func main() {
 		close(resultChan)
 	}()
 
-	for resultChan != nil {
+	for data := range resultChan {
+		// Aquí puedes realizar alguna acción con los datos recibidos del canal
+		fmt.Println(data)
 	}
 
 	fmt.Println("Finished reading from all devices")
 
 }
 
-func readDevice(device []gousb.ID, resultChan chan<- []byte) {
+func readDevice(device []gousb.ID, ctx *gousb.Context, resultChan chan<- string, wg *sync.WaitGroup) {
 
-	// Initialize a new Context.
-	ctx := gousb.NewContext()
-	defer ctx.Close()
+	defer wg.Done()
 
 	// Open each MIDI device with a given VID/PID
 	dev, err := ctx.OpenDeviceWithVIDPID(device[1], device[0])
@@ -184,9 +180,9 @@ func readDevice(device []gousb.ID, resultChan chan<- []byte) {
 						endpoint: endpoint,
 					}
 
-					if !mdev.read(endpointDesc.MaxPacketSize) {
+					if !mdev.read(endpointDesc.MaxPacketSize, resultChan) {
 
-						return
+						wg.Done()
 					}
 
 				}
@@ -197,7 +193,7 @@ func readDevice(device []gousb.ID, resultChan chan<- []byte) {
 
 }
 
-func (mdev *MIDIDEV) read(maxSize int) bool {
+func (mdev *MIDIDEV) read(maxSize int, resultChan chan<- string) bool {
 
 	interval := time.Duration(1250000) //hardcoded, idkw it appears to be 0ms according to the endpoint poll description
 
@@ -224,18 +220,20 @@ func (mdev *MIDIDEV) read(maxSize int) bool {
 
 			switch data[0] {
 			case 11, 14:
-
-				fmt.Println(Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+(Green+"CC:"), data[2], "Value: ", data[3], clrReset)
+				resultChan <- fmt.Sprintf("[%s-%s] >>> CC:%d Value: %d", man, pr, data[2], data[3])
+				//fmt.Sprintf(Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+(Green+"CC:%d"), data[2], "Value: %i", data[3], clrReset)
 
 			case 8:
 
 				note := getNotePosition(&data[2])
-				fmt.Println(Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+(Cyan+"Note OFF: "), list[note], " Velocity: ", data[3], clrReset)
+				//fmt.Println(Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+(Cyan+"Note OFF: "), list[note], " Velocity: ", data[3], clrReset)
+				resultChan <- fmt.Sprintf("[%s-%s] >>> Note OFF: %s\tVelocity: %d", man, pr, list[note], data[3])
 
 			case 9:
 				note := getNotePosition(&data[2])
-
-				fmt.Println(CyanBG+Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+CyanBG+Black+"Note ON:  ", list[note], " Velocity: ", data[3], clrReset)
+				//s, _ := fmt.Println(CyanBG+Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+CyanBG+Black+"Note ON:  ", list[note], " Velocity: ", data[3], clrReset)
+				resultChan <- fmt.Sprintf("[%s-%s] >>> Note ON: %s\tVelocity: %d", man, pr, list[note], data[3])
+				//fmt.Sprintf("%s",s)
 			}
 
 		}
