@@ -124,9 +124,7 @@ func main() {
 
 	for _, dev := range midiDevices {
 		wg.Add(1)
-
 		go readDevice(dev, ctx, resultChan, &wg)
-
 	}
 
 	// Wait for all goroutines to finish
@@ -136,7 +134,6 @@ func main() {
 	}()
 
 	for data := range resultChan {
-		// Aquí puedes realizar alguna acción con los datos recibidos del canal
 		fmt.Println(data)
 	}
 
@@ -157,7 +154,7 @@ func readDevice(device []gousb.ID, ctx *gousb.Context, resultChan chan<- string,
 
 	dev.SetAutoDetach(true)
 
-	// Iterate through configurations
+	// Iterate through devices and endpoints
 	for num := range dev.Desc.Configs {
 		config, _ := dev.Config(num)
 
@@ -181,7 +178,6 @@ func readDevice(device []gousb.ID, ctx *gousb.Context, resultChan chan<- string,
 					}
 
 					if !mdev.read(endpointDesc.MaxPacketSize, resultChan) {
-
 						wg.Done()
 					}
 
@@ -231,9 +227,9 @@ func (mdev *MIDIDEV) read(maxSize int, resultChan chan<- string) bool {
 
 			case 9:
 				note := getNotePosition(&data[2])
-				//s, _ := fmt.Println(CyanBG+Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+CyanBG+Black+"Note ON:  ", list[note], " Velocity: ", data[3], clrReset)
+				fmt.Println(CyanBG+Bold+Red+"["+man+"-"+pr+"] >>> "+clrReset+CyanBG+Black+"Note ON:  ", list[note], " Velocity: ", data[3], clrReset)
 				resultChan <- fmt.Sprintf("[%s-%s] >>> Note ON: %s\tVelocity: %d", man, pr, list[note], data[3])
-				//fmt.Sprintf("%s",s)
+				
 			}
 
 		}
