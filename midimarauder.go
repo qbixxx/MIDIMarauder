@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync"
 	"time"
+	"github.com/rivo/tview"
+
 )
 
 const asciiTitle = "  \\  | _)      | _)\n" +
@@ -51,7 +53,7 @@ type MIDIDEV struct {
 func getNotesList() []string {
 	return []string{"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "}
 }
-func scanForMIDIDevices(ctx *gousb.Context) [][]gousb.ID {
+func scanForMIDIDevices(ctx *gousb.Context) ([][]gousb.ID, string) {
 
 	//defer ctx.Close()
 
@@ -63,7 +65,7 @@ func scanForMIDIDevices(ctx *gousb.Context) [][]gousb.ID {
 
 	if err != nil {
 		fmt.Printf("Failed to open devices: %v\n", err)
-		return nil
+		return nil, "zero"
 	}
 	defer func() {
 		for _, dev := range devices {
@@ -100,22 +102,51 @@ func scanForMIDIDevices(ctx *gousb.Context) [][]gousb.ID {
 		}
 	}
 
-	fmt.Println(Green+"MIDI devices found:", count, clrReset)
-	return out
+	return out, fmt.Sprintf("MIDI devices found: %d", count)
+	
 }
 
 func main() {
 
+	app := tview.NewApplication()
+	textView := tview.NewTextView().
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetChangedFunc(func() {
+			app.Draw()
+		})
+
+		staticTextView := tview.NewTextView().
+		SetTextAlign(tview.AlignLeft).
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetWordWrap(true).
+		SetBorder(true).
+		SetBorderPadding(1, 1, 1, 1).
+		
+
+		layout := tview.NewFlex().
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(textView, 0, 8, true).
+			AddItem(staticTextView, 0, 2, false).
+			AddItem(tview.NewBox().SetBorder(true).SetTitle("Bottom (5 rows)"), 5, 1, false), 0, 2, false).
+		AddItem(tview.NewBox().SetBorder(true).SetTitle("Right (20 cols)"), 20, 1, false)
+	
+	
 	ctx := gousb.NewContext()
 
-	fmt.Println(Red + asciiTitle + clrReset)
 
-	midiDevices := scanForMIDIDevices(ctx)
+
+	//fmt.Println(Red + asciiTitle + clrReset)
+
+	midiDevices, str := scanForMIDIDevices(ctx)
 	if len(midiDevices) == 0 {
 		fmt.Println(Red + "Exiting" + clrReset)
 		os.Exit(0)
 	}
-	fmt.Println(midiStream)
+
+	fmt.Fprintf(staticTextView,"%s", str)
+	//fmt.Println(midiStream)
 
 	resultChan := make(chan string)
 	var wg sync.WaitGroup
@@ -134,9 +165,12 @@ func main() {
 	}()
 
 	for data := range resultChan {
-		fmt.Println(data)
+		fmt.Fprintf(textView, "%s ", data)
+		textView.ScrollToEnd()
 	}
-
+	if err := app.SetRoot(layout, true).SetFocus(textView).Run(); err != nil {
+		panic(err)
+	}
 	fmt.Println("Finished reading from all devices")
 
 }
