@@ -8,7 +8,7 @@ For now it's just a proof of concept that MIDI messages can be received through 
 # To Do:
 
 * Automatically recognize every MIDI device connected ✅
-* Create TUI with [bubbletea](https://github.com/charmbracelet/bubbletea).
+* Create TUI with [tview](https://github.com/rivo/tview).
 * Literally everything else.
   
 # Demo
