@@ -8,7 +8,7 @@ For now it's just a proof of concept that MIDI messages can be received through 
 # To Do:
 
 * Automatically recognize every MIDI device connected ✅
-* Create TUI with [tview](https://github.com/rivo/tview).
+* Create TUI with [tview](https://github.com/rivo/tview). - In progress
 * Literally everything else.
   
 # Demo
