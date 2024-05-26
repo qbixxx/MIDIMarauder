@@ -11,7 +11,7 @@ For now it's just a proof of concept that MIDI messages can be received through 
 * Create TUI with [tview](https://github.com/rivo/tview). - In progress
 * Literally everything else.
   
-# Demo
+# Demo (Outdated)
 automatically detects both midi devices, listens for midi messages form every device that remains connected until there is none left and closes.
 
 
