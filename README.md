@@ -12,7 +12,7 @@ For now it's just a proof of concept that MIDI messages can be received through 
 * Literally everything else.
   
 # Demo (Outdated)
-automatically detects both midi devices, listens for midi messages form every device that remains connected until there is none left and closes.
+Automatically detects both midi devices, listens for midi messages form every device that remains connected until there is none left and closes.
 
 
 https://github.com/qbixxx/midiMarauder/assets/89623002/7358e3fd-c217-4108-9519-c678175022d0
