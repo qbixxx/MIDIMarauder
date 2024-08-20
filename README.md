@@ -17,3 +17,4 @@ Automatically detects both midi devices, listens for midi messages form every de
 
 https://github.com/qbixxx/midiMarauder/assets/89623002/7358e3fd-c217-4108-9519-c678175022d0
 
+https://asciinema.org/a/rYY6CcJk1ryIvRNsrRPMEamIA
