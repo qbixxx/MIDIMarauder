@@ -96,12 +96,16 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 						if ifSetting.Class == gousb.ClassAudio && ifSetting.SubClass == 3 && endpoint.Direction == gousb.EndpointDirectionIn {
 							man, _ := dev.Manufacturer()
 							prod, _ := dev.Product()
+							vid := dev.Desc.Vendor
+							pid := dev.Desc.Product
 							//fmt.Printf("MIDI Device [%d]: %s - %s\n", count, man, pr)
 							count++
 							d := &midiDev{
 								device: dev,
 								man:    man,
 								prod:   prod,
+								vid:	vid,
+								pid:	pid,
 								//context:  ctx,
 								//intf:     intf,
 								//endpoint: endpoint,
@@ -188,6 +192,7 @@ func main() {
 			wg.Add(1)
 			go func(device midiDev) {
 				defer wg.Done()
+
 				readDevice(device, ctx, midiStream, &wg, app)
 			}(*dev)
 		}
@@ -205,15 +210,18 @@ func readDevice(mdev midiDev, ctx *gousb.Context, midiStream *tview.TextView, wg
 	//defer wg.Done()
 
 	// Open each MIDI device with a given VID/PID
-	dev, err := ctx.OpenDeviceWithVIDPID(mdev.device.Desc.Vendor, mdev.device.Desc.Product)
+//	dev, err := ctx.OpenDeviceWithVIDPID(mdev.device.Desc.Vendor, mdev.device.Desc.Product)
+
+	dev, err := ctx.OpenDeviceWithVIDPID(mdev.vid, mdev.pid)
+
 	if err != nil {
 		fmt.Println("Error >>>", err)
 	}
 	//if dev == nil{
 	//	os.Exit(1)
 	//}
-	fmt.Println("Error >>>", err)
-	fmt.Println("dev >>>", dev)
+	//fmt.Println("Error >>>", err)
+	//fmt.Println("dev >>>", dev)
 	//defer dev.Close()
 
 	dev.SetAutoDetach(true)
@@ -283,30 +291,31 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 
 			case 10:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> After touch: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
-
+				//formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> After touch: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d|\tMax packet size: %d", mdev.man, mdev.prod, list[note], data[3],maxSize)
+ 
 
 			case 11, 14:
 				
-				formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> CC:%d Value: %d",maxSize, mdev.man, mdev.prod ,data[2], data[3])
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod ,data[2], data[3],maxSize,data)
 				//formattedMessage = fmt.Sprintf("CC_ x%",data)
 				fmt.Println(formattedMessage)
 			case 8:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> Note OFF: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s\t|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3],maxSize, data)
 			case 9:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> Note ON: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note ON: %s\t|\tVelocity: %d\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3],maxSize, data)
 			default:
 				// Handle other MIDI message types (optional)
-				formattedMessage = fmt.Sprintf("UNKNOWN__ x%",data)
+				//formattedMessage = fmt.Sprintf("UNKNOWN__ x%",data)
 
 				//formattedMessage = fmt.Sprintf("mps+++++++++++++++++++++++++++: %d [%s-%s] >>> Unknown message: %x",maxSize, mdev.man, mdev.prod, data)
 			}
 
 			// Update the MIDI Stream text view in a thread-safe manner
 			app.QueueUpdateDraw(func() {
-				fmt.Fprintln(midiStream, "[orange]"+formattedMessage)
+				fmt.Fprintln(midiStream, "[pink]"+formattedMessage)
 				midiStream.ScrollToEnd()
 			})
 		}
