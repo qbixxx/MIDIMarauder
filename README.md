@@ -14,7 +14,8 @@ For now it's just a proof of concept that MIDI messages can be received through 
 # Demo (Outdated)
 Automatically detects both midi devices, listens for midi messages form every device that remains connected until there is none left and closes.
 
+Example recording can be seen on [asciinema](https://asciinema.org/a/rYY6CcJk1ryIvRNsrRPMEamIA)
 
-https://github.com/qbixxx/midiMarauder/assets/89623002/7358e3fd-c217-4108-9519-c678175022d0
+![Screenshot from 2024-08-19 21-37-35](https://github.com/user-attachments/assets/aaf4e2df-2c31-41b4-9f3f-352b4a434cb1)
 
-https://asciinema.org/a/rYY6CcJk1ryIvRNsrRPMEamIA
+
