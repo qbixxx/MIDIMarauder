@@ -308,7 +308,7 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3] ,maxSize, data)
 			default:
 				// Handle other MIDI message types (optional)
-				
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: %x", mdev.man, mdev.prod, data)
 
 				
 			}
