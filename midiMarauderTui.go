@@ -260,7 +260,7 @@ func readDevice(mdev midiDev, ctx *gousb.Context, midiStream *tview.TextView, wg
 func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Application) bool {
 
 	interval := time.Duration(12500000) //hardcoded, idkw it appears to be 0ms according to the endpoint poll description
-	fmt.Println(interval)
+	//fmt.Println(interval)
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
@@ -292,20 +292,20 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 			case 10:
 				note = getNotePosition(&data[2])
 				//formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> After touch: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
  
 
 			case 11, 14:
 				
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod ,data[2], data[3], maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod ,data[2], data[3], maxSize, data)
 				//formattedMessage = fmt.Sprintf("CC_ x%",data)
-				fmt.Println(formattedMessage)
+				//fmt.Println(formattedMessage)
 			case 8:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s\t|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
 			case 9:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note ON: %s\t|\tVelocity: %d\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3] ,maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3] ,maxSize, data)
 			default:
 				// Handle other MIDI message types (optional)
 				
