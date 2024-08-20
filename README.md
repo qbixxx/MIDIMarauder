@@ -12,7 +12,7 @@ For now it's just a proof of concept that MIDI messages can be received through 
 * Literally everything else.
   
 # Demo
-Automatically detects both midi devices, listens for midi messages form every device that remains connected until there is none left and closes.
+Automatically detects every midi device, listens for midi messages form every device that remains connected until there is none left and closes.
 
 Example recording can be seen on [asciinema](https://asciinema.org/a/rYY6CcJk1ryIvRNsrRPMEamIA)
 
