@@ -16,6 +16,5 @@ Automatically detects every midi device, listens for midi messages form every de
 
 Example recording can be seen on [asciinema](https://asciinema.org/a/1FWmP8QCQI1cuYbjvVfE3qZh4) (terrible mobile UX)
 
-
-![Screenshot from 2024-08-19 21-37-35](https://github.com/user-attachments/assets/eb3c0d75-1dfe-4537-99bb-3d3494026328)
+![Screenshot from 2024-08-22 20-28-01](https://github.com/user-attachments/assets/0ce22667-71fa-4e48-963f-52123437ec51)
 
