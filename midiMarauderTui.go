@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/google/gousb"
 	"github.com/rivo/tview"
+	
 //	"os"
 	 "sync"
 	 "time"
@@ -136,7 +137,7 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 			//app.QueueUpdateDraw(func() {
 				//fmt.Println(i)
 				strDevice := fmt.Sprintf("Device [%d]: %s - %s",i, mdev.man, mdev.prod)
-				fmt.Fprintln(menu, strDevice)
+				fmt.Fprintln(menu, "[white]"+strDevice)
 				menu.ScrollToEnd()
 			//})
 		}
@@ -274,7 +275,7 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 	buff := make([]byte, maxSize)
 	var note byte
 	for {
-
+		var formattedMessage string
 		select {
 		case <-ticker.C:
 			//buff := make([]byte, maxSize)
@@ -286,41 +287,54 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 
 			data := buff[:n]
 
-			var formattedMessage string
+			
 			switch data[0] {
 
 			case 10:
 				note = getNotePosition(&data[2])
 				//formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> After touch: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
  
 
 			case 11, 14:
 				
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod ,data[2], data[3], maxSize, data)
+				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod ,data[2], data[3], maxSize, data), "red", "black", true, true)
 				//formattedMessage = fmt.Sprintf("CC_ x%",data)
 				//fmt.Println(formattedMessage)
 			case 8:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
 			case 9:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %x", mdev.man, mdev.prod, list[note], data[3] ,maxSize, data)
+				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3] ,maxSize, data), "white", "green", false, false)
 			default:
 				// Handle other MIDI message types (optional)
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: %x", mdev.man, mdev.prod, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: %X", mdev.man, mdev.prod, data)
 
 				
 			}
 
 			// Update the MIDI Stream text view in a thread-safe manner
 			app.QueueUpdateDraw(func() {
-				fmt.Fprintln(midiStream, "[pink]"+formattedMessage)
+				fmt.Fprintln(midiStream, formattedMessage)
 				midiStream.ScrollToEnd()
 			})
 		}
 	}
 }
+
+func styleText(text, color, background string, bold, underline bool) string {
+    style := fmt.Sprintf("[%s:%s]", color, background)
+    if bold {
+        style += "[::b]"
+    }
+    if underline {
+        style += "[::u]"
+    }
+    // Asegúrate de restablecer el color de fondo al final del texto
+    return fmt.Sprintf("%s%s[white:black]", style, text)
+}
+
 
 
 
