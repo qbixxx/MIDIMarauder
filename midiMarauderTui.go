@@ -50,9 +50,7 @@ type midiDev struct {
 	prod   string
 	vid		gousb.ID
 	pid	    gousb.ID
-	//context  *gousb.Context
 
-	//intf     *gousb.Interface
 	endpoint *gousb.InEndpoint
 }
 
@@ -62,9 +60,6 @@ func getNotesList() []string {
 
 func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.Application) []*midiDev { //[]gousb.ID {
 
-	//defer ctx.Close()
-
-	//store every device connected
 	devices, err := ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
 		return true
 
@@ -99,7 +94,6 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 							prod, _ := dev.Product()
 							vid := dev.Desc.Vendor
 							pid := dev.Desc.Product
-							//fmt.Printf("MIDI Device [%d]: %s - %s\n", count, man, pr)
 							count++
 							d := &midiDev{
 								device: dev,
@@ -111,7 +105,6 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 								//intf:     intf,
 								//endpoint: endpoint,
 							}
-							//[]gousb.ID{dev.Desc.Product, dev.Desc.Vendor}
 							midiDevices = append(midiDevices, d)
 						}
 					}
@@ -119,7 +112,6 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 			}
 		}
 	}
-//s := fmt.Sprintf("[red]MIDI Devices Found: %d", len(midiDevices))
 
 	var devMsg string
 
@@ -134,18 +126,13 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 
 	if len(midiDevices) > 0{
 		for i, mdev := range midiDevices{
-			//app.QueueUpdateDraw(func() {
-				//fmt.Println(i)
 				strDevice := fmt.Sprintf("Device [%d]: %s - %s",i, mdev.man, mdev.prod)
 				fmt.Fprintln(menu, "[white]"+strDevice)
 				menu.ScrollToEnd()
-			//})
+			
 		}
 	}
 	
-
-	//fmt.Println(Green+"MIDI devices found:", count, clrReset)
-
 	
 	return midiDevices
 }
@@ -176,15 +163,6 @@ func main() {
 	//fmt.Println(Red + asciiTitle + clrReset)
 
 	midiDevices := scanForMIDIDevices(ctx, menu, app)
-	//fmt.Println(midiDevices[0].man,midiDevices[0].prod)
-	//scanForMIDIDevices(ctx, menu, app)
-	
-	//if len(midiDevices) == 0 {
-	//	fmt.Println(Red + "Exiting" + clrReset)
-	//	os.Exit(0)
-	//}
-	//fmt.Println(midiStream)
-
 	
 		var wg sync.WaitGroup
 
@@ -208,22 +186,12 @@ func main() {
 
 func readDevice(mdev midiDev, ctx *gousb.Context, midiStream *tview.TextView, wg *sync.WaitGroup, app *tview.Application) {
 
-	//defer wg.Done()
-
-	// Open each MIDI device with a given VID/PID
-//	dev, err := ctx.OpenDeviceWithVIDPID(mdev.device.Desc.Vendor, mdev.device.Desc.Product)
-
 	dev, err := ctx.OpenDeviceWithVIDPID(mdev.vid, mdev.pid)
 
 	if err != nil {
 		fmt.Println("Error >>>", err)
 	}
-	//if dev == nil{
-	//	os.Exit(1)
-	//}
-	//fmt.Println("Error >>>", err)
-	//fmt.Println("dev >>>", dev)
-	//defer dev.Close()
+
 
 	dev.SetAutoDetach(true)
 
@@ -267,10 +235,6 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 
 	list := getNotesList()
 
-	//man, _ := mdev.device.Manufacturer()
-	//pr, _ := mdev.device.Product()
-
-	//fmt.Println(man, pr, "<<<")
 
 	buff := make([]byte, maxSize)
 	var note byte
@@ -278,8 +242,7 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 		var formattedMessage string
 		select {
 		case <-ticker.C:
-			//buff := make([]byte, maxSize)
-			n, err := mdev.endpoint.Read(buff) 	//////////////
+			n, err := mdev.endpoint.Read(buff) 	
 			if err != nil {
 				fmt.Printf("Error!!!!!!!!!!!!!!!!!!!: %s: %s - %s\n", err, mdev.man, mdev.prod)
 				return false
