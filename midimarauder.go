@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/google/gousb"
 	"github.com/rivo/tview"
-	
-//	"os"
-	 "sync"
-	 "time"
+
+	//	"os"
+	"sync"
+	"time"
 )
 
 const asciiTitle = "[cyan]  \\  | _)      | _)\n" +
@@ -48,8 +48,8 @@ type midiDev struct {
 	device *gousb.Device
 	man    string
 	prod   string
-	vid		gousb.ID
-	pid	    gousb.ID
+	vid    gousb.ID
+	pid    gousb.ID
 
 	endpoint *gousb.InEndpoint
 }
@@ -99,8 +99,8 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 								device: dev,
 								man:    man,
 								prod:   prod,
-								vid:	vid,
-								pid:	pid,
+								vid:    vid,
+								pid:    pid,
 								//context:  ctx,
 								//intf:     intf,
 								//endpoint: endpoint,
@@ -115,33 +115,44 @@ func scanForMIDIDevices(ctx *gousb.Context, menu *tview.TextView, app *tview.App
 
 	var devMsg string
 
-	if len(midiDevices) == 0{
+	if len(midiDevices) == 0 {
 		devMsg = fmt.Sprintf("[red]MIDI Devices Found: %d", len(midiDevices))
-	}else{
+	} else {
 		devMsg = fmt.Sprintf("[green]MIDI Devices Found: %d", len(midiDevices))
 	}
-	
 
 	fmt.Fprintln(menu, devMsg)
 
-	if len(midiDevices) > 0{
-		for i, mdev := range midiDevices{
-				strDevice := fmt.Sprintf("Device [%d]: %s - %s",i, mdev.man, mdev.prod)
-				fmt.Fprintln(menu, "[white]"+strDevice)
-				menu.ScrollToEnd()
-			
+	if len(midiDevices) > 0 {
+		for i, mdev := range midiDevices {
+			strDevice := fmt.Sprintf("Device [%d]: %s - %s", i, mdev.man, mdev.prod)
+			fmt.Fprintln(menu, "[white]"+strDevice)
+
+			//	for _, mdev := range midiDevices {
+			//		node := tview.NewTreeNode(mdev.man).
+			//			//SetReference(filepath.Join(path, file.Name())).
+			//			SetSelectable(true)
+			//		//if file.IsDir() {
+			//			node.SetColor(tcell.ColorGreen)
+			//		//}
+			//		target.AddChild(node)
+			//	}
+
+			menu.ScrollToEnd()
+
 		}
+
 	}
-	
-	
+
 	return midiDevices
+
 }
 
-var ctx *gousb.Context
+//var ctx *gousb.Context
 
 func main() {
 
-	ctx := gousb.NewContext()	
+	ctx := gousb.NewContext()
 
 	app := tview.NewApplication()
 	midiStream := tview.NewTextView().SetDynamicColors(true)
@@ -152,37 +163,38 @@ func main() {
 	menu.SetTextAlign(tview.AlignLeft).SetDynamicColors(true).
 		SetText(asciiTitle)
 
+	//tree := tview.NewTreeView()
+	//menu.AddItem(tree)
+
 	grid := tview.NewGrid().
 		SetColumns(-4, 54).
 		SetRows(-2, 2).
-		SetBorders(false).
+		SetBorders(true).
 		AddItem(midiStream, 0, 0, 1, 1, 0, 0, true).
 		AddItem(menu, 0, 1, 1, 1, 0, 0, true)
 
-	
 	//fmt.Println(Red + asciiTitle + clrReset)
 
 	midiDevices := scanForMIDIDevices(ctx, menu, app)
-	
-		var wg sync.WaitGroup
 
-		// Launch a goroutine for each MIDI device
-		for _, dev := range midiDevices {
-			wg.Add(1)
-			go func(device midiDev) {
-				defer wg.Done()
+	var wg sync.WaitGroup
 
-				readDevice(device, ctx, midiStream, &wg, app)
-			}(*dev)
-		}
-	
+	// Launch a goroutine for each MIDI device
+	for _, dev := range midiDevices {
+		wg.Add(1)
+		go func(device midiDev) {
+			defer wg.Done()
+
+			readDevice(device, ctx, midiStream, &wg, app)
+		}(*dev)
+	}
+
 	if err := app.SetRoot(grid, true).SetFocus(grid).Run(); err != nil {
 		panic(err)
 	}
 
 	wg.Wait() // Ensure all goroutines finish before exiting
 }
-
 
 func readDevice(mdev midiDev, ctx *gousb.Context, midiStream *tview.TextView, wg *sync.WaitGroup, app *tview.Application) {
 
@@ -191,7 +203,6 @@ func readDevice(mdev midiDev, ctx *gousb.Context, midiStream *tview.TextView, wg
 	if err != nil {
 		fmt.Println("Error >>>", err)
 	}
-
 
 	dev.SetAutoDetach(true)
 
@@ -224,8 +235,6 @@ func readDevice(mdev midiDev, ctx *gousb.Context, midiStream *tview.TextView, wg
 
 }
 
-
-
 func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Application) bool {
 
 	interval := time.Duration(12500000) //hardcoded, idkw it appears to be 0ms according to the endpoint poll description
@@ -235,14 +244,13 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 
 	list := getNotesList()
 
-
 	buff := make([]byte, maxSize)
 	var note byte
 	for {
 		var formattedMessage string
 		select {
 		case <-ticker.C:
-			n, err := mdev.endpoint.Read(buff) 	
+			n, err := mdev.endpoint.Read(buff)
 			if err != nil {
 				fmt.Printf("Error!!!!!!!!!!!!!!!!!!!: %s: %s - %s\n", err, mdev.man, mdev.prod)
 				return false
@@ -250,31 +258,27 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 
 			data := buff[:n]
 
-			
 			switch data[0] {
 
 			case 10:
 				note = getNotePosition(&data[2])
 				//formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> After touch: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
 				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
- 
 
 			case 11, 14:
-				
-				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod ,data[2], data[3], maxSize, data), "red", "black", true, true)
-				//formattedMessage = fmt.Sprintf("CC_ x%",data)
-				//fmt.Println(formattedMessage)
+
+				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, data[2], data[3], maxSize, data), "red", "black", true, true)
+
 			case 8:
 				note = getNotePosition(&data[2])
 				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
 			case 9:
 				note = getNotePosition(&data[2])
-				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3] ,maxSize, data), "white", "green", false, false)
+				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data), "white", "green", false, false)
 			default:
 				// Handle other MIDI message types (optional)
 				formattedMessage = fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: %X", mdev.man, mdev.prod, data)
 
-				
 			}
 
 			// Update the MIDI Stream text view in a thread-safe manner
@@ -287,19 +291,16 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 }
 
 func styleText(text, color, background string, bold, underline bool) string {
-    style := fmt.Sprintf("[%s:%s]", color, background)
-    if bold {
-        style += "[::b]"
-    }
-    if underline {
-        style += "[::u]"
-    }
-    // Asegúrate de restablecer el color de fondo al final del texto
-    return fmt.Sprintf("%s%s[white:black]", style, text)
+	style := fmt.Sprintf("[%s:%s]", color, background)
+	if bold {
+		style += "[::b]"
+	}
+	if underline {
+		style += "[::u]"
+	}
+	// Asegúrate de restablecer el color de fondo al final del texto
+	return fmt.Sprintf("%s%s[white:black]", style, text)
 }
-
-
-
 
 func getNotePosition(n *byte) byte {
 
