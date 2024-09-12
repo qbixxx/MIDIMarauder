@@ -1,4 +1,4 @@
-module midimarauder.go
+module midiMarauder
 
 go 1.22.1
 

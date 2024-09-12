@@ -1,12 +1,13 @@
 package main
 
 import (
+	//"fmt"
+	"github.com/google/gousb"
+	"github.com/rivo/tview"
 	"log"
 	"midiMarauder/internal/midi"
 	"midiMarauder/internal/ui"
 	"midiMarauder/internal/usb"
-	"github.com/google/gousb"
-	"github.com/rivo/tview"
 	"sync"
 )
 
@@ -22,18 +23,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to scan for MIDI devices: %v", err)
 	}
+	
+
+	for _, dev := range devices{
+		uiManager.AddDevice2Menu(dev.Manufacturer, dev.Product)
+	}
 
 	// Iniciar lectura de dispositivos MIDI
 	var wg sync.WaitGroup
 	for _, device := range devices {
 		wg.Add(1)
-		go func(dev midi.MidiDevice) {
+		go func(dev *midi.MidiDevice) {
 			defer wg.Done()
-			dev.Read(ui.CreateMidiStream(), app)
+			dev.Read(uiManager.GetMIDIStream(), app)
 		}(device)
 	}
 
-	if err := app.SetRoot(uiManager, true).SetFocus(uiManager).Run(); err != nil {
+	// Correr la aplicación
+	if err := app.SetRoot(uiManager.Root, true).SetFocus(uiManager.Root).Run(); err != nil {
 		log.Fatalf("Failed to run application: %v", err)
 	}
 
