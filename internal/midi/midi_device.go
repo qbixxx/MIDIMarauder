@@ -13,7 +13,7 @@ type MidiDevice struct {
 	Product      string
 	Vid          gousb.ID
 	Pid          gousb.ID
-	Endpoint     *gousb.InEndpoint
+	EndpointIn     *gousb.InEndpoint
 	MaxPacketSize int
 }
 
@@ -28,7 +28,7 @@ func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) bo
 	for {
 		select {
 		case <-ticker.C:
-			n, err := d.Endpoint.Read(buff)
+			n, err := d.EndpointIn.Read(buff)
 			if err != nil {
 				fmt.Printf("Error: %s: %s - %s\n", err, d.Manufacturer, d.Product)
 				return false
