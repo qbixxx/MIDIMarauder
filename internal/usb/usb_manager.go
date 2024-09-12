@@ -61,7 +61,7 @@ func ScanForMIDIDevices(ctx *gousb.Context) ([]*midi.MidiDevice, error) {
 								Product:      prod,
 								Vid:          vid,
 								Pid:          pid,
-								Endpoint:     endpoint,
+								EndpointIn:     endpoint,
 								MaxPacketSize: mpSize,
 							}
 
