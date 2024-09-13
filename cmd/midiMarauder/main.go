@@ -26,7 +26,8 @@ func main() {
 	
 
 	for _, dev := range devices{
-		uiManager.AddDevice2Menu(dev.Manufacturer, dev.Product)
+		man, prod, _, _ := dev.GetProductInfo()
+		uiManager.AddDevice2Menu(man, prod)
 	}
 
 	// Iniciar lectura de dispositivos MIDI

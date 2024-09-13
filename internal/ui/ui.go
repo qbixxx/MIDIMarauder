@@ -5,6 +5,14 @@ import (
 	"fmt"
 )
 
+const asciiTitle = "[cyan]  \\  | _)      | _)\n" +
+	" |\\/ |  |   _` |  |                                 \n" +
+	" |   |  |  (   |  |                                 \n" +
+	"_|\\ _| _| \\__,_| _|                   [turquoise]|             \n" +
+	" |\\/ |   _` |   __|  _` |  |   |   _` |   _ \\   __| \n" +
+	" |   |  (   |  |    (   |  |   |  (   |   __/  |    \n" +
+	"_|  _| \\__,_| _|   \\__,_| \\__,_| \\__,_| \\___| _| \n\n\n[clear]"
+
 type UI struct {
 	Root	*tview.Grid
 	MidiStream *tview.TextView
@@ -18,7 +26,9 @@ func SetupUI() *UI {
 
 	menu := tview.NewTextView()
 	menu.Box.SetBorder(true).SetTitle(" Menu ")
-	menu.SetTextAlign(tview.AlignLeft).SetDynamicColors(true)
+	menu.SetTextAlign(tview.AlignLeft).SetDynamicColors(true)	
+	menu.SetText(asciiTitle)
+
 
 	grid := tview.NewGrid().
 		SetColumns(-4, 54).
@@ -27,7 +37,8 @@ func SetupUI() *UI {
 		AddItem(midiStream, 0, 0, 1, 1, 0, 0, true).
 		AddItem(menu, 0, 1, 1, 1, 0, 0, true)
 
-	ui.Root = grid
+	
+		ui.Root = grid
 	ui.MidiStream = midiStream
 	ui.Menu = menu
 
