@@ -7,9 +7,7 @@ For now it's just a proof of concept that MIDI messages can be received through 
 
 # To Do:
 
-* Automatically recognize every MIDI device connected ✅
-* Create TUI with [tview](https://github.com/rivo/tview). - In progress
-* Literally everything else.
+* Develop better concurrency
   
 # Demo
 Automatically detects every midi device, listens for midi messages form every device that remains connected until there is none left and closes.
