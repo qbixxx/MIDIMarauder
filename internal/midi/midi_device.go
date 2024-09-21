@@ -8,22 +8,30 @@ import (
 )
 
 type MidiDevice struct {
-	Device       *gousb.Device
-	Manufacturer string
-	Product      string
-	VID          gousb.ID
-	PID          gousb.ID
-	EndpointIn     *gousb.InEndpoint
-	MaxPacketSize int
+	Device			*gousb.Device
+	Manufacturer	string
+	Product			string
+	VID				gousb.ID
+	PID				gousb.ID
+	EndpointIn		*gousb.InEndpoint
+	Port			int
+	Class			gousb.Class
+	SubClass		gousb.Class
+	Protocol		gousb.Protocol
+	Speed			gousb.Speed
+	MaxPacketSize	int
+	DeviceConfig	string
+	SerialNumber	string
 }
 
-func (d *MidiDevice) GetProductInfo() (string, string, gousb.ID, gousb.ID){
-	return d.Manufacturer, d.Product, d.VID, d.PID
+func (d *MidiDevice) GetProductInfo() (string, string, gousb.ID, gousb.ID, string, string, string, string, string){
+	return d.Manufacturer, d.Product, d.VID, d.PID, d.SerialNumber, d.Class.String(), d.SubClass.String(), d.Protocol.String(), d.Speed.String()
 }
 
 func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) bool {
 	interval := time.Duration(12500000)
 	ticker := time.NewTicker(interval)
+	//ticker := time.NewTicker(d.PollInterval)
 	defer ticker.Stop()
 
 	list := getNotesList()

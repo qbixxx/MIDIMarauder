@@ -16,7 +16,7 @@ func main() {
 	defer ctx.Close()
 
 	uiManager := ui.SetupUI()
-	app := tview.NewApplication()
+	app := tview.NewApplication().EnableMouse(true)
 
 	// Escanear dispositivos MIDI
 	devices, err := usb.ScanForMIDIDevices(ctx)
@@ -26,8 +26,8 @@ func main() {
 	
 
 	for _, dev := range devices{
-		man, prod, _, _ := dev.GetProductInfo()
-		uiManager.AddDevice2Menu(man, prod)
+		//man, prod, vid, pid, sn,   := dev.GetProductInfo()
+		uiManager.AddDevice2Menu(*dev)//(man, prod, sn, dev.Device.Desc.Path, dev.Device.Desc.Port, dev.Device.Desc.Bus, dev.Device.Desc.Speed)
 	}
 
 	// Iniciar lectura de dispositivos MIDI
@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// Correr la aplicación
-	if err := app.SetRoot(uiManager.Root, true).SetFocus(uiManager.Root).Run(); err != nil {
+	if err := app.SetRoot(uiManager.Root, true).SetFocus(uiManager.Tree).Run(); err != nil {
 		log.Fatalf("Failed to run application: %v", err)
 	}
 
