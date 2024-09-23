@@ -16,7 +16,7 @@ const asciiTitle = "\n[cyan]    \\  | _)      | _)\n" +
 	"  _|\\ _| _| \\__,_| _|                   [turquoise]|             \n" +
 	"   |\\/ |   _` |   __|  _` |  |   |   _` |   _ \\   __| \n" +
 	"   |   |  (   |  |    (   |  |   |  (   |   __/  |    \n" +
-	"  _|  _| \\__,_| _|   \\__,_| \\__,_| \\__,_| \\___| _| \n\n\n[-:-:-:-]"
+	"  _|  _| \\__,_| _|   \\__,_| \\__,_| \\__,_| \\___| _| \n[-:-:-:-]"
 
 type UI struct {
 	Root	*tview.Grid
@@ -36,7 +36,7 @@ func SetupUI() *UI {
 		
 	title.SetTextAlign(tview.AlignLeft).
 		SetDynamicColors(true).
-		SetText(asciiTitle)
+		SetText(asciiTitle).SetScrollable(false)
 
 
 	menu := tview.NewGrid()
@@ -70,6 +70,9 @@ func SetupUI() *UI {
 	ui.MidiStream = midiStream
 	ui.Menu = rootTree
 	ui.Tree = tree
+	ui.Tree.SetSelectedFunc(func(node *tview.TreeNode){
+		node.SetExpanded(!node.IsExpanded())})
+
 	return ui
 }
 
@@ -82,9 +85,30 @@ func (ui *UI) GetMenu() *tview.TreeNode {
 }
 
 func(ui *UI) AddDevice2Menu(dev midi.MidiDevice){//man, prod, sn string, path []int, port, bus int, s gousb.Speed){
-	//fmt.Fprintln(ui.Menu, man + " - " + prod +   " | " + sn + " : " , path, port, bus, s)
 	
-	node := tview.NewTreeNode(" " + dev.Manufacturer + dev.Product).SetSelectable(true).SetColor(tcell.ColorRed)
+	
+	node := tview.NewTreeNode(" " + dev.Manufacturer +" "+ dev.Product).SetSelectable(true).SetColor(tcell.ColorRed)
+
+		mnode := tview.NewTreeNode(dev.Manufacturer).SetSelectable(false)
+		pnode := tview.NewTreeNode(dev.Product).SetSelectable(false)
+		vidnode := tview.NewTreeNode(dev.VID.String()).SetSelectable(false)
+		pidnode := tview.NewTreeNode(dev.PID.String()).SetSelectable(false)
+		cnode := tview.NewTreeNode(dev.Class.String()).SetSelectable(false)
+		scnode := tview.NewTreeNode(dev.SubClass.String()).SetSelectable(false)
+		protnode := tview.NewTreeNode(dev.Protocol.String()).SetSelectable(false)
+		snnode := tview.NewTreeNode(dev.SerialNumber).SetSelectable(false)
+
+
+		node.AddChild(mnode)
+		node.AddChild(pnode)
+		node.AddChild(vidnode)
+		node.AddChild(pidnode)
+		node.AddChild(cnode)
+		node.AddChild(scnode)
+		node.AddChild(protnode)
+		node.AddChild(snnode)
+	
+
 	ui.Menu.AddChild(node)
 
 	//ui.Menu.ScrollToEnd()
