@@ -107,7 +107,7 @@ func(ui *UI) AddDevice2Menu(dev midi.MidiDevice){//man, prod, sn string, path []
 		node.AddChild(scnode)
 		node.AddChild(protnode)
 		node.AddChild(snnode)
-	
+	node.Collapse()
 
 	ui.Menu.AddChild(node)
 
