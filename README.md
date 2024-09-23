@@ -12,5 +12,5 @@ For now it's just a proof of concept that MIDI messages can be received through 
 # Demo
 Automatically detects every midi device, listens for midi messages form every device that remains connected.
 
-![Peek 2024-09-23 11-43](https://github.com/user-attachments/assets/7d136f02-8964-4d69-9e17-aba0db9fa14b)
 
+![Peek 2024-09-21 20-26](https://github.com/user-attachments/assets/80c5a1d0-2ee8-4cd5-bcd0-447c73dd593e)
