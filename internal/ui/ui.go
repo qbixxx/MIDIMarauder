@@ -70,8 +70,7 @@ func SetupUI() *UI {
 	ui.MidiStream = midiStream
 	ui.Menu = rootTree
 	ui.Tree = tree
-	ui.Tree.SetSelectedFunc(func(node *tview.TreeNode){
-		node.SetExpanded(!node.IsExpanded())})
+	ui.Tree.SetSelectedFunc(func(node *tview.TreeNode){		node.SetExpanded(!node.IsExpanded())})
 
 	return ui
 }
@@ -89,24 +88,25 @@ func(ui *UI) AddDevice2Menu(dev midi.MidiDevice){//man, prod, sn string, path []
 	
 	node := tview.NewTreeNode(" " + dev.Manufacturer +" "+ dev.Product).SetSelectable(true).SetColor(tcell.ColorRed)
 
-		mnode := tview.NewTreeNode(dev.Manufacturer).SetSelectable(false)
-		pnode := tview.NewTreeNode(dev.Product).SetSelectable(false)
-		vidnode := tview.NewTreeNode(dev.VID.String()).SetSelectable(false)
-		pidnode := tview.NewTreeNode(dev.PID.String()).SetSelectable(false)
-		cnode := tview.NewTreeNode(dev.Class.String()).SetSelectable(false)
-		scnode := tview.NewTreeNode(dev.SubClass.String()).SetSelectable(false)
-		protnode := tview.NewTreeNode(dev.Protocol.String()).SetSelectable(false)
-		snnode := tview.NewTreeNode(dev.SerialNumber).SetSelectable(false)
+	mnode := tview.NewTreeNode(dev.Manufacturer).SetSelectable(false)
+	pnode := tview.NewTreeNode(dev.Product).SetSelectable(false)
+	vidnode := tview.NewTreeNode(dev.VID.String()).SetSelectable(false)
+	pidnode := tview.NewTreeNode(dev.PID.String()).SetSelectable(false)
+	cnode := tview.NewTreeNode(dev.Class.String()).SetSelectable(false)
+	scnode := tview.NewTreeNode(dev.SubClass.String()).SetSelectable(false)
+	protnode := tview.NewTreeNode(dev.Protocol.String()).SetSelectable(false)
+	snnode := tview.NewTreeNode(dev.SerialNumber).SetSelectable(false)
+	epnode := tview.NewTreeNode(dev.EndpointIn.String()).SetSelectable(false)
+	node.AddChild(mnode)
+	node.AddChild(pnode)
+	node.AddChild(vidnode)
+	node.AddChild(pidnode)
+	node.AddChild(cnode)
+	node.AddChild(scnode)
+	node.AddChild(protnode)
+	node.AddChild(snnode)
+	node.AddChild(epnode)
 
-
-		node.AddChild(mnode)
-		node.AddChild(pnode)
-		node.AddChild(vidnode)
-		node.AddChild(pidnode)
-		node.AddChild(cnode)
-		node.AddChild(scnode)
-		node.AddChild(protnode)
-		node.AddChild(snnode)
 	node.Collapse()
 
 	ui.Menu.AddChild(node)

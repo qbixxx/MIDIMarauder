@@ -45,5 +45,5 @@ func main() {
 		log.Fatalf("Failed to run application: %v", err)
 	}
 
-	wg.Wait() // Esperar a que todas las lecturas terminen antes de salir
+	//wg.Wait() // Esperar a que todas las lecturas terminen antes de salir
 }
