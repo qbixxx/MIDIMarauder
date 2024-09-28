@@ -237,7 +237,7 @@ func readDevice(mdev midiDev, ctx *gousb.Context, midiStream *tview.TextView, wg
 
 func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Application) bool {
 
-	interval := time.Duration(12500000) //hardcoded, idkw it appears to be 0ms according to the endpoint poll description
+	interval := time.Duration(1250000) //hardcoded, idkw it appears to be 0ms according to the endpoint poll description
 	//fmt.Println(interval)
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -263,21 +263,21 @@ func (mdev *midiDev) read(maxSize int, midiStream *tview.TextView, app *tview.Ap
 			case 10:
 				note = getNotePosition(&data[2])
 				//formattedMessage = fmt.Sprintf("mps: %d [%s-%s] >>> After touch: %s\tVelocity: %d",maxSize, mdev.man, mdev.prod, list[note], data[3])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: %02X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
 
 			case 11, 14:
 
-				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, data[2], data[3], maxSize, data), "red", "black", true, true)
+				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %02X", mdev.man, mdev.prod, data[2], data[3], maxSize, data), "red", "black", true, true)
 
 			case 8:
 				note = getNotePosition(&data[2])
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %02X", mdev.man, mdev.prod, list[note], data[3], maxSize, data)
 			case 9:
 				note = getNotePosition(&data[2])
-				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", mdev.man, mdev.prod, list[note], data[3], maxSize, data), "white", "green", false, false)
+				formattedMessage = styleText(fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: %02X", mdev.man, mdev.prod, list[note], data[3], maxSize, data), "white", "green", false, false)
 			default:
 				// Handle other MIDI message types (optional)
-				formattedMessage = fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: %X", mdev.man, mdev.prod, data)
+				formattedMessage = fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: %02X", mdev.man, mdev.prod, data)
 
 			}
 

@@ -50,19 +50,31 @@ func ScanForMIDIDevices(ctx *gousb.Context) ([]*midi.MidiDevice, error) {
 								continue
 							}
 
-							man, _ := dev.Manufacturer()
-							prod, _ := dev.Product()
+							man, _		:= dev.Manufacturer()
+							prod, _		:= dev.Product()
+							serialN, _	:= dev.SerialNumber()
 							vid := dev.Desc.Vendor
 							pid := dev.Desc.Product
 							mpSize := endpointDesc.MaxPacketSize
+							class := dev.Desc.Class
+							subClass := dev.Desc.SubClass
+							protocol := dev.Desc.Protocol
+							speed	:= dev.Desc.Speed
+							
 							d := midi.MidiDevice{
-								Device:       dev,
-								Manufacturer: man,
-								Product:      prod,
-								Vid:          vid,
-								Pid:          pid,
-								Endpoint:     endpoint,
-								MaxPacketSize: mpSize,
+								Device:			dev,
+								Manufacturer:	man,
+								Product:		prod,
+								VID:			vid,
+								PID:			pid,
+								EndpointIn:		endpoint,
+								MaxPacketSize:	mpSize,
+								DeviceConfig:	config.String(),
+								SerialNumber:	serialN,
+								Class:			class,
+								SubClass:		subClass,
+								Protocol:		protocol,
+								Speed:			speed,
 							}
 
 							midiDevices = append(midiDevices, &d)

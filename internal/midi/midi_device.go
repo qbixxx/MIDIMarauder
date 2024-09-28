@@ -8,35 +8,49 @@ import (
 )
 
 type MidiDevice struct {
-	Device       *gousb.Device
-	Manufacturer string
-	Product      string
-	Vid          gousb.ID
-	Pid          gousb.ID
-	Endpoint     *gousb.InEndpoint
-	MaxPacketSize int
+	Device			*gousb.Device
+	Manufacturer	string
+	Product			string
+	VID				gousb.ID
+	PID				gousb.ID
+	EndpointIn		*gousb.InEndpoint
+	Port			int
+	Class			gousb.Class
+	SubClass		gousb.Class
+	Protocol		gousb.Protocol
+	Speed			gousb.Speed
+	MaxPacketSize	int
+	DeviceConfig	string
+	SerialNumber	string
+}
+
+
+func getNotesList() []string {
+	return []string{"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "}
+}
+func (d *MidiDevice) GetProductInfo() (string, string, gousb.ID, gousb.ID, string, string, string, string, string){
+	return d.Manufacturer, d.Product, d.VID, d.PID, d.SerialNumber, d.Class.String(), d.SubClass.String(), d.Protocol.String(), d.Speed.String()
 }
 
 func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) bool {
-	interval := time.Duration(12500000)
+	interval := time.Duration(1250000)
 	ticker := time.NewTicker(interval)
+	//ticker := time.NewTicker(d.PollInterval)
 	defer ticker.Stop()
 
-	list := getNotesList()
 	buff := make([]byte, d.MaxPacketSize)
 
 	for {
 		select {
 		case <-ticker.C:
-			n, err := d.Endpoint.Read(buff)
+			n, err := d.EndpointIn.Read(buff)
 			if err != nil {
 				fmt.Printf("Error: %s: %s - %s\n", err, d.Manufacturer, d.Product)
 				return false
 			}
 
 			data := buff[:n]
-			formattedMessage := formatMessage(data, list, d)
-			fmt.Println(formattedMessage)
+			formattedMessage := formatMessage(data, d)
 
 			app.QueueUpdateDraw(func() {
 				fmt.Fprintln(midiStream, formattedMessage)
@@ -46,35 +60,30 @@ func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) bo
 	}
 }
 
-func getNotesList() []string {
-	return []string{"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "}
-}
-
-func formatMessage(data []byte, list []string, d *MidiDevice) string {
-	var note byte
+ 
+func formatMessage(data []byte, d *MidiDevice) string {
 	switch data[0] {
-	case 10:
-		note = getNotePosition(&data[2])
-		fmt.Printf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, list[note], data[3], len(data), data)
-		return fmt.Sprintf("[%s-%s]\t| After touch: %s|\tVelocity: %d\t\t|\tMax packet size: %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, list[note], data[3], len(data), data)
-	case 11, 14:
-		fmt.Printf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, data[2], data[3], len(data), data)
-		return fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, data[2], data[3], len(data), data)
-	case 8:
-		note = getNotePosition(&data[2])
-		fmt.Printf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, list[note], data[3], len(data), data)
-		return fmt.Sprintf("[%s-%s]\t| Note OFF: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, list[note], data[3], len(data), data)
-	case 9:
-		note = getNotePosition(&data[2])
-		return fmt.Sprintf("[%s-%s]\t| Note ON: %s \t|\tVelocity: %d \t\t|\tMax packet size: %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, list[note], data[3], len(data), data)
+	case 0xA: // aftertouch
+		note, octave := getNoteAndOctave(data[2])
+		return fmt.Sprintf("[%s-%s]\t| After touch: %s%d|\tVelocity: %d\t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, note, octave, data[3], len(data), data)
+	case 0xB:// CC, 0xE:
+		return fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, data[2], data[3], len(data), data)
+	case 0xE:
+		return fmt.Sprintf("[%s-%s]\t| Pitch Bend:%d\t\t\t|\tValue: %d \t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, data[2], data[3], len(data), data)
+	case 0x8:
+		note, octave := getNoteAndOctave(data[2])
+		return fmt.Sprintf("[%s-%s]\t| Note OFF: %s%d \t|\tVelocity: %d \t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, note, octave, data[3], len(data), data)
+	case 0x9:
+		note, octave := getNoteAndOctave(data[2])
+		return fmt.Sprintf("[%s-%s]\t| Note ON: %s%d \t|\tVelocity: %d \t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, note, octave, data[3], len(data), data)
 	default:
-		return fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: %X", d.Manufacturer, d.Product, data)
+		return fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: % X", d.Manufacturer, d.Product, data)
 	}
 }
 
-func getNotePosition(n *byte) byte {
-	for *n > 11 {
-		*n = *n - 12
-	}
-	return *n
+func getNoteAndOctave(n byte) (string, int) {
+	notes := getNotesList()
+	note := notes[n % 12]      // Calcula la nota (dentro de una octava)
+	octave := int(n / 12) - 1  // Calcula la octava, ajustada para MIDI
+	return note, octave
 }
