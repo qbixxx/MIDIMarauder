@@ -3,10 +3,7 @@ package ui
 import (
 	"github.com/rivo/tview"
 	"github.com/gdamore/tcell/v2"
-
 	"midiMarauder/internal/midi"
-
-
 
 )
 
@@ -26,14 +23,13 @@ type UI struct {
 }
 
 func SetupUI() *UI {
+	
 	ui := new(UI)
 	midiStream := tview.NewTextView().SetDynamicColors(true)
 	midiStream.Box.SetBorder(true).SetTitle(" Midi Stream ")
 
 	title := tview.NewTextView()
-
 	title.Box.SetBorder(false)
-		
 	title.SetTextAlign(tview.AlignLeft).
 		SetDynamicColors(true).
 		SetText(asciiTitle).SetScrollable(false)
@@ -41,7 +37,7 @@ func SetupUI() *UI {
 
 	menu := tview.NewGrid()
 	menu.Box.SetBorder(true).SetTitle(" Menu ")
-	//menu.SetTextAlign(tview.AlignLeft).SetDynamicColors(true)	
+
 
 	gridMenu := tview.NewGrid()
 	gridMenu.SetRows(10,-1)	
@@ -59,7 +55,7 @@ func SetupUI() *UI {
 	menu.AddItem(tree, 0, 0, 1, 1, 0, 0, true)
 
 	rootGrid := tview.NewGrid().
-		SetColumns(-4, 54).
+		SetColumns(-4,62).
 		SetRows(-2, 1).
 		SetBorders(false).
 		AddItem(midiStream, 0, 0, 1, 1, 0, 0, true).
@@ -86,17 +82,17 @@ func (ui *UI) GetMenu() *tview.TreeNode {
 func(ui *UI) AddDevice2Menu(dev midi.MidiDevice){//man, prod, sn string, path []int, port, bus int, s gousb.Speed){
 	
 	
-	node := tview.NewTreeNode(" " + dev.Manufacturer +" "+ dev.Product).SetSelectable(true).SetColor(tcell.ColorRed)
+	node := tview.NewTreeNode(" "+dev.Product).SetSelectable(true).SetColor(tcell.ColorRed)
 
-	mnode := tview.NewTreeNode(dev.Manufacturer).SetSelectable(false)
-	pnode := tview.NewTreeNode(dev.Product).SetSelectable(false)
-	vidnode := tview.NewTreeNode(dev.VID.String()).SetSelectable(false)
-	pidnode := tview.NewTreeNode(dev.PID.String()).SetSelectable(false)
-	cnode := tview.NewTreeNode(dev.Class.String()).SetSelectable(false)
-	scnode := tview.NewTreeNode(dev.SubClass.String()).SetSelectable(false)
-	protnode := tview.NewTreeNode(dev.Protocol.String()).SetSelectable(false)
-	snnode := tview.NewTreeNode(dev.SerialNumber).SetSelectable(false)
-	epnode := tview.NewTreeNode(dev.EndpointIn.String()).SetSelectable(false)
+	mnode := tview.NewTreeNode("Manufacturer: "+dev.Manufacturer).SetSelectable(false)
+	pnode := tview.NewTreeNode("Product: "+dev.Product).SetSelectable(false)
+	pidnode := tview.NewTreeNode("PID: 0x" + dev.PID.String()).SetSelectable(false)
+	vidnode := tview.NewTreeNode("VID: 0x" + dev.VID.String()).SetSelectable(false)
+	cnode := tview.NewTreeNode("Class: " + dev.Class).SetSelectable(false)
+	scnode := tview.NewTreeNode("SubClass: " + dev.SubClass.String()).SetSelectable(false)
+	protnode := tview.NewTreeNode("Protocol: " + dev.Protocol.String()).SetSelectable(false)
+	snnode := tview.NewTreeNode("Serial Number: " +  dev.SerialNumber).SetSelectable(false)
+	epnode := tview.NewTreeNode("IN Endpoint: "+ dev.EndpointIn.String()).SetSelectable(false)
 	node.AddChild(mnode)
 	node.AddChild(pnode)
 	node.AddChild(vidnode)
