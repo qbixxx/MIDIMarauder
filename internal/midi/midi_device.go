@@ -16,12 +16,13 @@ type MidiDevice struct {
 	EndpointIn    *gousb.InEndpoint
 	Port          int
 	Class         string
-	SubClass      gousb.Class
-	Protocol      gousb.Protocol
+	SubClass      string
+	Protocol      string
 	Speed         gousb.Speed
 	MaxPacketSize int
 	DeviceConfig  string
 	SerialNumber  string
+	MaxPower      string
 	Color         string
 }
 
@@ -37,7 +38,7 @@ func getNotesList() []string {
 	return []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
 }
 func (d *MidiDevice) GetProductInfo() (string, string, gousb.ID, gousb.ID, string, string, string, string, string) {
-	return d.Manufacturer, d.Product, d.VID, d.PID, d.SerialNumber, d.Class, d.SubClass.String(), d.Protocol.String(), d.Speed.String()
+	return d.Manufacturer, d.Product, d.VID, d.PID, d.SerialNumber, d.Class, d.SubClass, d.Protocol, d.Speed.String()
 }
 
 func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) {
@@ -56,7 +57,7 @@ func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) {
 			}
 
 			data := buff[:n]
-			formattedMessage := styleText(formatMessage(data, d), "lightpink", true, true)
+			formattedMessage := styleText(formatMessage(data, d), "white", false, true)
 
 			app.QueueUpdateDraw(func() {
 				fmt.Fprintln(midiStream, formattedMessage)
@@ -94,7 +95,7 @@ func formatMessage(data []byte, d *MidiDevice) string {
 }
 
 func styleText(text, color string, bold, underline bool) string {
-	style := fmt.Sprintf("[%s:]", color)
+	style := fmt.Sprintf("[%s]", color)
 	if bold {
 		style += "[::b]"
 	}
@@ -102,7 +103,7 @@ func styleText(text, color string, bold, underline bool) string {
 		style += "[::u]"
 	}
 	// Asegúrate de restablecer el color de fondo al final del texto
-	return fmt.Sprintf("%s%s[-:-:-:-]", style, text)
+	return fmt.Sprintf("%s%s", style, text)
 }
 
 func getNoteAndOctave(n byte) (string, int) {

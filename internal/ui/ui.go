@@ -63,7 +63,9 @@ func SetupUI() *UI {
 	ui.MidiStream = midiStream
 	ui.Menu = rootTree
 	ui.Tree = tree
-	ui.Tree.SetSelectedFunc(func(node *tview.TreeNode) { node.SetExpanded(!node.IsExpanded()) })
+	ui.Tree.SetSelectedFunc(func(node *tview.TreeNode) { node.SetExpanded(!node.IsExpanded()) }).
+		SetGraphicsColor(tcell.ColorDarkCyan)
+	
 
 	return ui
 }
@@ -81,13 +83,15 @@ func (ui *UI) AddDevice2Menu(dev midi.MidiDevice) {
 
 	node.AddChild(createDeviceNode("Manufacturer", dev.Manufacturer, false))
 	node.AddChild(createDeviceNode("Product", dev.Product, false))
-	node.AddChild(createDeviceNode("PID", "0x"+dev.PID.String(), false))
 	node.AddChild(createDeviceNode("VID", "0x"+dev.VID.String(), false))
+	node.AddChild(createDeviceNode("PID", "0x"+dev.PID.String(), false))
 	node.AddChild(createDeviceNode("Class", dev.Class, false))
-	node.AddChild(createDeviceNode("SubClass", dev.SubClass.String(), false))
-	node.AddChild(createDeviceNode("Protocol", dev.Protocol.String(), false))
+	node.AddChild(createDeviceNode("SubClass", dev.SubClass, false))
+	node.AddChild(createDeviceNode("Protocol", dev.Protocol, false))
 	node.AddChild(createDeviceNode("Serial Number", dev.SerialNumber, false))
+	node.AddChild(createDeviceNode("Max Current", dev.MaxPower, false))
 	node.AddChild(createDeviceNode("IN Endpoint", dev.EndpointIn.String(), false))
+
 
 	node.Collapse()
 	ui.Menu.AddChild(node)

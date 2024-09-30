@@ -2,6 +2,7 @@ package usb
 
 import (
 	"fmt"
+	"strconv"
 	"github.com/google/gousb"
 	"midiMarauder/internal/midi"
 )
@@ -56,10 +57,11 @@ func ScanForMIDIDevices(ctx *gousb.Context) ([]*midi.MidiDevice, error) {
 							vid := dev.Desc.Vendor
 							pid := dev.Desc.Product
 							mpSize := endpointDesc.MaxPacketSize
-							class := dev.Desc.Class.String()
-							subClass := dev.Desc.SubClass
-							protocol := dev.Desc.Protocol
+							class := interFaceSetting.Class.String()
+							subClass := interFaceSetting.SubClass.String()
+							protocol := interFaceSetting.Protocol.String()
 							speed := dev.Desc.Speed
+							mPower := config.Desc.MaxPower
 
 							d := midi.MidiDevice{
 								Device:        dev,
@@ -75,6 +77,7 @@ func ScanForMIDIDevices(ctx *gousb.Context) ([]*midi.MidiDevice, error) {
 								SubClass:      subClass,
 								Protocol:      protocol,
 								Speed:         speed,
+								MaxPower:		strconv.FormatUint(uint64(mPower), 10) + " Milliamperes",
 							}
 
 							midiDevices = append(midiDevices, &d)
