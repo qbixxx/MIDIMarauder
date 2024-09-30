@@ -22,8 +22,16 @@ type MidiDevice struct {
 	MaxPacketSize	int
 	DeviceConfig	string
 	SerialNumber	string
+	Color			string
 }
 
+const (
+    afterTouch   = 0xA
+    controlChange = 0xB
+    pitchBend    = 0xE
+    noteOff      = 0x8
+    noteOn       = 0x9
+)
 
 func getNotesList() []string {
 	return []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
@@ -32,7 +40,7 @@ func (d *MidiDevice) GetProductInfo() (string, string, gousb.ID, gousb.ID, strin
 	return d.Manufacturer, d.Product, d.VID, d.PID, d.SerialNumber, d.Class, d.SubClass.String(), d.Protocol.String(), d.Speed.String()
 }
 
-func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) bool {
+func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application){
 	interval := time.Duration(125000)
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -44,12 +52,11 @@ func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) bo
 		case <-ticker.C:
 			n, err := d.EndpointIn.Read(buff)
 			if err != nil {
-				fmt.Printf("Error: %s: %s - %s\n", err, d.Manufacturer, d.Product)
-				return false
+				fmt.Printf("Error: %s: %s - %s\n", err, d.Manufacturer, d.Product) 
 			}
 
 			data := buff[:n]
-			formattedMessage := formatMessage(data, d)
+			formattedMessage := styleText(formatMessage(data, d), "lightpink", true, true)
 
 			app.QueueUpdateDraw(func() {
 				fmt.Fprintln(midiStream, formattedMessage)
@@ -61,27 +68,34 @@ func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) bo
 
  
 func formatMessage(data []byte, d *MidiDevice) string {
+	
 	switch data[0] {
-	case 0xA: // aftertouch
+	
+	case afterTouch:
 		note, octave := getNoteAndOctave(data[2])
 		return fmt.Sprintf("[%s-%s]\t| After touch: %s%d|\tVelocity: %d\t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, note, octave, data[3], len(data), data)
-	case 0xB:// CC
+	
+	case controlChange:
 		return fmt.Sprintf("[%s-%s]\t| CC:%d\t\t\t|\tValue: %d \t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, data[2], data[3], len(data), data)
-	case 0xE: // Pitch bend
+	
+	case pitchBend:
 		return fmt.Sprintf("[%s-%s]\t| Pitch Bend\t\t|\tValue: %d \t\t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, data[3], len(data), data)
-	case 0x8:// Note Off
+
+	case noteOff:
 		note, octave := getNoteAndOctave(data[2])
 		return fmt.Sprintf("[%s-%s]\t| Note OFF: %s%d \t\t|\tVelocity: %d \t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, note, octave, data[3], len(data), data)
-	case 0x9: //Note On
+	
+	case noteOn:
 		note, octave := getNoteAndOctave(data[2])
 		return fmt.Sprintf("[%s-%s]\t| Note ON: %s%d \t\t|\tVelocity: %d \t|\tPacket Size %d\t|\tRAW DATA: % X", d.Manufacturer, d.Product, note, octave, data[3], len(data), data)
+	
 	default:
 		return fmt.Sprintf("[%s-%s]\t| UNKNOWN MESSAGE \t|\tRAW DATA: % X", d.Manufacturer, d.Product, data)
 	}
 }
 
-func styleText(text, color, background string, bold, underline bool) string {
-	style := fmt.Sprintf("[%s:%s]", color, background)
+func styleText(text, color string, bold, underline bool) string {
+	style := fmt.Sprintf("[%s:]", color)
 	if bold {
 		style += "[::b]"
 	}
