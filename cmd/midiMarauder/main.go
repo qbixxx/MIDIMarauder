@@ -23,11 +23,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to scan for MIDI devices: %v", err)
 	}
-	
 
-	for _, dev := range devices{
+	for _, dev := range devices {
 		//man, prod, vid, pid, sn,   := dev.GetProductInfo()
-		uiManager.AddDevice2Menu(*dev)//(man, prod, sn, dev.Device.Desc.Path, dev.Device.Desc.Port, dev.Device.Desc.Bus, dev.Device.Desc.Speed)
+		uiManager.AddDevice2Menu(*dev) //(man, prod, sn, dev.Device.Desc.Path, dev.Device.Desc.Port, dev.Device.Desc.Bus, dev.Device.Desc.Speed)
 	}
 
 	// Iniciar lectura de dispositivos MIDI
