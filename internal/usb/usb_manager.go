@@ -1,10 +1,10 @@
 package usb
 
 import (
-	//"fmt"
+
 	"github.com/google/gousb"
 	"midiMarauder/internal/midi"
-	//"strconv"
+	"strconv"
 )
 
 // DeviceManager interface for managing devices
@@ -69,6 +69,12 @@ func (m *USBMIDIDeviceManager) ScanDevices() ([]midi.MIDIReader, error) {
 							vid := dev.Desc.Vendor
 							pid := dev.Desc.Product
 							mpSize := endpointDesc.MaxPacketSize
+							
+							class := interFaceSetting.Class.String()
+							subClass := interFaceSetting.SubClass.String()
+							protocol := interFaceSetting.Protocol.String()
+							serialN, _ := dev.SerialNumber()
+							mPower := config.Desc.MaxPower
 
 							midiDev := &midi.MidiDevice{
 								Device:        dev,
@@ -78,6 +84,11 @@ func (m *USBMIDIDeviceManager) ScanDevices() ([]midi.MIDIReader, error) {
 								PID:           pid,
 								EndpointIn:    endpoint,
 								MaxPacketSize: mpSize,
+								Class:			class,
+								SubClass:		subClass,
+								Protocol:		protocol,
+								SerialNumber:	serialN,
+								MaxPower:		strconv.FormatUint(uint64(mPower), 10) + " Milliamperes",
 							}
 
 							midiDevices = append(midiDevices, midiDev)
