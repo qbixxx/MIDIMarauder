@@ -1,37 +1,52 @@
 package usb
 
 import (
-	"fmt"
-	"strconv"
+	//"fmt"
 	"github.com/google/gousb"
 	"midiMarauder/internal/midi"
+	//"strconv"
 )
 
-func ScanForMIDIDevices(ctx *gousb.Context) ([]*midi.MidiDevice, error) {
-	devices, err := ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
+// DeviceManager interface for managing devices
+type DeviceManager interface {
+	ScanDevices() ([]midi.MIDIReader, error)
+	Close() error
+}
+
+// USBMIDIDeviceManager implements DeviceManager for USB MIDI devices
+type USBMIDIDeviceManager struct {
+	ctx *gousb.Context
+}
+
+func NewUSBMIDIDeviceManager() *USBMIDIDeviceManager {
+	return &USBMIDIDeviceManager{ctx: gousb.NewContext()}
+}
+
+// ScanDevices scans for USB MIDI devices and returns a list of MIDIReader
+func (m *USBMIDIDeviceManager) ScanDevices() ([]midi.MIDIReader, error) {
+	devices, err := m.ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
+		// Logic for identifying MIDI devices
 		return true
 	})
 
 	if err != nil {
 		return nil, err
 	}
+
 	defer func() {
 		for _, dev := range devices {
 			dev.Close()
 		}
 	}()
 
-	var midiDevices []*midi.MidiDevice
+	var midiDevices []midi.MIDIReader
 	for _, dev := range devices {
-
 		for num := range dev.Desc.Configs {
-
 			config, _ := dev.Config(num)
 
 			for _, intfDesc := range config.Desc.Interfaces {
 				interFace, err := config.Interface(intfDesc.Number, 0)
 				if err != nil {
-					//fmt.Printf("Error initializing interface: %v\n", err)
 					continue
 				}
 
@@ -41,29 +56,21 @@ func ScanForMIDIDevices(ctx *gousb.Context) ([]*midi.MidiDevice, error) {
 
 							err = dev.SetAutoDetach(true)
 							if err != nil {
-								//fmt.Printf("Failed to detach kernel driver: %v\n", err)
 								continue
 							}
 
 							endpoint, err := interFace.InEndpoint(endpointDesc.Number)
 							if err != nil {
-								fmt.Printf("Error accessing InEndpoint: %v\n", err)
 								continue
 							}
 
 							man, _ := dev.Manufacturer()
 							prod, _ := dev.Product()
-							serialN, _ := dev.SerialNumber()
 							vid := dev.Desc.Vendor
 							pid := dev.Desc.Product
 							mpSize := endpointDesc.MaxPacketSize
-							class := interFaceSetting.Class.String()
-							subClass := interFaceSetting.SubClass.String()
-							protocol := interFaceSetting.Protocol.String()
-							speed := dev.Desc.Speed
-							mPower := config.Desc.MaxPower
 
-							d := midi.MidiDevice{
+							midiDev := &midi.MidiDevice{
 								Device:        dev,
 								Manufacturer:  man,
 								Product:       prod,
@@ -71,26 +78,19 @@ func ScanForMIDIDevices(ctx *gousb.Context) ([]*midi.MidiDevice, error) {
 								PID:           pid,
 								EndpointIn:    endpoint,
 								MaxPacketSize: mpSize,
-								DeviceConfig:  config.String(),
-								SerialNumber:  serialN,
-								Class:         class,
-								SubClass:      subClass,
-								Protocol:      protocol,
-								Speed:         speed,
-								MaxPower:		strconv.FormatUint(uint64(mPower), 10) + " Milliamperes",
 							}
 
-							midiDevices = append(midiDevices, &d)
-
+							midiDevices = append(midiDevices, midiDev)
 						}
 					}
 				}
-
 			}
-
 		}
-
 	}
-
 	return midiDevices, nil
+}
+
+func (m *USBMIDIDeviceManager) Close() error {
+	m.ctx.Close()
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"midiMarauder/internal/midi"
 )
 
+
 const asciiTitle = "\n[cyan]    \\  | _)      | _)\n" +
 	"   |\\/ |  |   _` |  |                                 \n" +
 	"   |   |  |  (   |  |                                 \n" +
@@ -23,7 +24,6 @@ type UI struct {
 }
 
 func SetupUI() *UI {
-
 	ui := new(UI)
 	midiStream := tview.NewTextView().SetDynamicColors(true)
 	midiStream.Box.SetBorder(true).SetTitle(" Midi Stream ")
@@ -65,43 +65,30 @@ func SetupUI() *UI {
 	ui.Tree = tree
 	ui.Tree.SetSelectedFunc(func(node *tview.TreeNode) { node.SetExpanded(!node.IsExpanded()) }).
 		SetGraphicsColor(tcell.ColorDarkCyan)
-	
 
 	return ui
 }
 
-func (ui *UI) GetMIDIStream() *tview.TextView {
-	return ui.MidiStream
-}
+// AddDevice2Menu adds a MIDI device and its details to the tree view
+func (ui *UI) AddDevice2Menu(device midi.MIDIReader) {
+	deviceInfo := device.GetDeviceDetails()
 
-func (ui *UI) GetMenu() *tview.TreeNode {
-	return ui.Menu
-}
+	node := tview.NewTreeNode(deviceInfo[1][1]).SetSelectable(true).SetColor(tcell.ColorRed)
 
-func (ui *UI) AddDevice2Menu(dev midi.MidiDevice) {
-	node := tview.NewTreeNode(dev.Product).SetSelectable(true).SetColor(tcell.ColorRed)
-
-	node.AddChild(createDeviceNode("Manufacturer", dev.Manufacturer, false))
-	node.AddChild(createDeviceNode("Product", dev.Product, false))
-	node.AddChild(createDeviceNode("VID", "0x"+dev.VID.String(), false))
-	node.AddChild(createDeviceNode("PID", "0x"+dev.PID.String(), false))
-	node.AddChild(createDeviceNode("Class", dev.Class, false))
-	node.AddChild(createDeviceNode("SubClass", dev.SubClass, false))
-	node.AddChild(createDeviceNode("Protocol", dev.Protocol, false))
-	node.AddChild(createDeviceNode("Serial Number", dev.SerialNumber, false))
-	node.AddChild(createDeviceNode("Max Current", dev.MaxPower, false))
-	node.AddChild(createDeviceNode("IN Endpoint", dev.EndpointIn.String(), false))
-
+	// Add the dev details
+	for _, detail := range deviceInfo {
+		node.AddChild(createDeviceNode(detail[0], detail[1], false))
+	}
 
 	node.Collapse()
 	ui.Menu.AddChild(node)
 }
 
+// Helper function to create a tree node for device details
 func createDeviceNode(label string, value string, selectable bool) *tview.TreeNode {
-	node := tview.NewTreeNode(fmt.Sprintf("%s: %s", label, value)).SetSelectable(selectable)
-	return node
+	return tview.NewTreeNode(fmt.Sprintf("%s: %s", label, value)).SetSelectable(selectable)
 }
 
-func CreateMidiStream() *tview.TextView {
-	return tview.NewTextView().SetDynamicColors(true)
+func (ui *UI) GetMIDIStream() *tview.TextView {
+	return ui.MidiStream
 }

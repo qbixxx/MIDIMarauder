@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+
+// MIDIReader interface for reading MIDI messages and providing device info
+type MIDIReader interface {
+	ReadMIDI(midiStream *tview.TextView, app *tview.Application) error
+	GetDeviceInfo() string
+	GetDeviceDetails() [][2]string
+}
+
+// MidiDevice implements MIDIReader
 type MidiDevice struct {
 	Device        *gousb.Device
 	Manufacturer  string
@@ -14,17 +23,14 @@ type MidiDevice struct {
 	VID           gousb.ID
 	PID           gousb.ID
 	EndpointIn    *gousb.InEndpoint
-	Port          int
+	MaxPacketSize int
 	Class         string
 	SubClass      string
 	Protocol      string
-	Speed         gousb.Speed
-	MaxPacketSize int
-	DeviceConfig  string
 	SerialNumber  string
 	MaxPower      string
-	Color         string
 }
+
 
 const (
 	afterTouch    = 0xA
@@ -37,11 +43,9 @@ const (
 func getNotesList() []string {
 	return []string{"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"}
 }
-func (d *MidiDevice) GetProductInfo() (string, string, gousb.ID, gousb.ID, string, string, string, string, string) {
-	return d.Manufacturer, d.Product, d.VID, d.PID, d.SerialNumber, d.Class, d.SubClass, d.Protocol, d.Speed.String()
-}
 
-func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) {
+
+func (d *MidiDevice) ReadMIDI(midiStream *tview.TextView, app *tview.Application) error {
 	interval := time.Duration(125000)
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -53,7 +57,7 @@ func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) {
 		case <-ticker.C:
 			n, err := d.EndpointIn.Read(buff)
 			if err != nil {
-				fmt.Printf("Error: %s: %s - %s\n", err, d.Manufacturer, d.Product)
+				return fmt.Errorf("error reading from %s: %v", d.Product, err)
 			}
 
 			data := buff[:n]
@@ -67,6 +71,25 @@ func (d *MidiDevice) Read(midiStream *tview.TextView, app *tview.Application) {
 	}
 }
 
+func (d *MidiDevice) GetDeviceInfo() string {
+	return fmt.Sprintf("MIDI Device: %s (%s) [%s:%s]", d.Manufacturer, d.Product, d.VID.String(), d.PID.String())
+}
+
+// GetDeviceDetails provides a detailed ordered slice of key-value pairs of the device's attributes
+func (d *MidiDevice) GetDeviceDetails() [][2]string {
+	return [][2]string{
+		{"Manufacturer", d.Manufacturer},
+		{"Product", d.Product},
+		{"VID", "0x" + d.VID.String()},
+		{"PID", "0x" + d.PID.String()},
+		{"Class", d.Class},
+		{"SubClass", d.SubClass},
+		{"Protocol", d.Protocol},
+		{"Serial Number", d.SerialNumber},
+		{"Max Current", d.MaxPower},
+		{"IN Endpoint", d.EndpointIn.String()},
+	}
+}
 func formatMessage(data []byte, d *MidiDevice) string {
 
 	switch data[0] {
@@ -102,7 +125,6 @@ func styleText(text, color string, bold, underline bool) string {
 	if underline {
 		style += "[::u]"
 	}
-	// Asegúrate de restablecer el color de fondo al final del texto
 	return fmt.Sprintf("%s%s", style, text)
 }
 
