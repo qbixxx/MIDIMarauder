@@ -21,3 +21,8 @@ The project is in an initial phase, but the following features are already suppo
 - USB MIDI device scanning.
 - Detailed device information display.
 - Basic MIDI message monitoring.
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
