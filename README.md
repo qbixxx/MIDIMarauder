@@ -12,5 +12,12 @@ This project allows users to:
 - Monitor MIDI messages in real-time.
 - Use a terminal-based graphical interface to manage connected devices.
   
-# Demo run (outdated)
+## Demo run (outdated)
 ![Peek 2024-09-25 22-00](https://github.com/user-attachments/assets/bcfb4757-27d3-4ec9-a608-1a2b3c48cb3b)
+
+## Project Status
+
+The project is in an initial phase, but the following features are already supported:
+- USB MIDI device scanning.
+- Detailed device information display.
+- Basic MIDI message monitoring.
