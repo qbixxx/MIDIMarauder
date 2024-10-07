@@ -6,6 +6,8 @@
 
 **MIDIMarauder** is a TUI application for scanning and managing MIDI devices connected via USB. It uses the ![gousb](https://github.com/google/gousb) library for USB communication and ![tview](https://github.com/rivo/tview) to provide a terminal user interface where you can view and manage your connected MIDI devices.
 
+This is a usefull tool to analyze and debug MIDI devices.
+
 This project allows users to:
 - Scan for MIDI devices connected via USB.
 - View detailed information about each MIDI device.
