@@ -23,7 +23,7 @@ The project is in an initial phase, but the following features are already suppo
 - USB MIDI device scanning.
 - Detailed device information display.
 - Basic MIDI message monitoring.
-
+- Fully concurrent USB device scanning.
 
 ## License
 
